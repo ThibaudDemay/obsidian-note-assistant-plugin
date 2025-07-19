@@ -29,10 +29,5 @@
 	"dependencies": {
 		"@huggingface/transformers": "3.6.3",
 		"onnxruntime-web": "^1.22.0"
-	},
-	"pnpm": {
-		"patchedDependencies": {
-			"@huggingface/transformers": "patches/@huggingface__transformers@3.6.3.patch"
-		}
 	}
 }
