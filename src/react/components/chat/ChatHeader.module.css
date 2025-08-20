@@ -1,0 +1,41 @@
+.chatHeader {
+    border-bottom: 1px solid var(--background-modifier-border);
+	padding: 10px 12px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chatTitleContainer {
+    flex: 1;
+}
+
+.chatTitle {
+    margin: 0;
+    color: var(--text-normal);
+    font-size: 1.2em;
+}
+
+.chatTimestampToggle {
+    background: none;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 6px;
+    padding: 6px 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+    margin-left: 10px;
+}
+
+.chatTimestampToggle:hover {
+    background-color: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
+
+.chatTimestampToggle.active {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border-color: var(--interactive-accent);
+}

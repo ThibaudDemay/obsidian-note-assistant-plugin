@@ -1,94 +1,90 @@
-# Obsidian Sample Plugin
+# 🧠 Note Assistant (Obsidian Plugin)
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+> Transform your Obsidian vault into an intelligent AI assistant using local embeddings and context-aware conversations.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+## ✨ Features
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+- 🔍 **Semantic Search**: Automatically finds relevant notes using vector embeddings
+- 💬 **Context-Aware Chat**: Conversational AI that understands your knowledge base
+- 🏠 **100% Local**: Powered by Ollama - no data leaves your machine
+- 📝 **Section-Based Embeddings**: Processes Markdown files by sections for precise context
+- ⚙️ **Fully Customizable**: Custom system prompts and conversation settings
+- 🧠 **Memory**: Maintains conversation history with configurable limits
 
-## First time developing plugins?
+## 🚀 Quick Start
 
-Quick starting guide for new plugin devs:
+### Prerequisites
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+- [Obsidian](https://obsidian.md/) installed
+- [Ollama](https://ollama.ai) running locally or on another PC
 
-## Releasing new releases
+### Installation
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+1. Download the latest release
+2. Extract to `.obsidian/plugins/obsidian-note-assistant/`
+3. Enable the plugin in Obsidian settings
+4. Configure your Ollama endpoint and model
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+## 📖 Usage
 
-## Adding your plugin to the community plugin list
+Open the command palette (`Ctrl/Cmd + P`) and run **"Note Assistant: Open Note Assistant"**
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+### System Prompt Configuration
 
-## How to use
+The power of this assistant lies in crafting specialized system prompts. Here are some examples:
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+#### 📚 Children's Book Writing Assistant
+```
+As a children's book writing specialist assistant, answer this question using:
+- Context information provided from Obsidian
+- Our conversation history to maintain consistency
+- Recently consulted notes to ensure continuity
 
-## Manually installing the plugin
-
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
-
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
-
-## Funding URL
-
-You can include funding URLs where people who use your plugin can financially support it.
-
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
-
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
+Make sure to:
+- Respond in English
+- Maintain consistency with the established universe and our previous exchanges
+- Reference previously discussed elements when relevant
+- Flag any potential contradictions
 ```
 
-If you have multiple URLs, you can also do:
+#### 🔬 Advanced Technology Research Assistant
+```
+As an assistant specialized in cutting-edge technology research, answer this question using:
+- Context information provided from Obsidian
+- Our conversation history to maintain consistency
+- Recently consulted notes to ensure continuity
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
+Make sure to:
+- Respond in English
+- Maintain consistency with the established universe and our previous exchanges
+- Reference previously discussed elements when relevant
+- Flag any potential contradictions
 ```
 
-## API Documentation
+## 🏗️ How It Works
 
-See https://github.com/obsidianmd/obsidian-api
+```mermaid
+graph LR
+    A[Markdown Notes] --> B[Section Splitting]
+    B --> C[Generate Embeddings]
+    C --> D[Vector Index]
+    E[User Query] --> F[Query Embedding]
+    F --> G[Similarity Search]
+    D --> G
+    G --> H[Relevant Context]
+    H --> I[LLM Response]
+```
+
+1. **Indexing**: Markdown files are split into logical sections
+2. **Embedding**: Each section is converted to vectors using Ollama
+3. **Search**: User queries are matched against the vector index
+4. **Context**: Most relevant sections are included in the LLM prompt
+5. **Response**: Ollama generates contextually aware responses
+
+## 🙏 Acknowledgments
+
+- [Obsidian](https://obsidian.md/) - Amazing knowledge management platform
+- [Ollama](https://ollama.ai) - Making local AI accessible
+- [Obsidian Plugin API](https://github.com/obsidianmd/obsidian-api) - Comprehensive plugin framework
+
+---

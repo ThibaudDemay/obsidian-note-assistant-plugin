@@ -3,7 +3,8 @@ import process from "process";
 import builtins from "builtin-modules";
 import { copy } from "esbuild-plugin-copy";
 import inlineWorkerPlugin from "esbuild-plugin-inline-worker";
-import { replace } from "esbuild-plugin-replace";
+import fs from 'fs';
+import path from 'path';
 
 const banner =
 `/*
@@ -44,14 +45,15 @@ const context = await esbuild.context({
 	treeShaking: true,
 	outfile: "dist/main.js",
 	minify: prod,
+	platform: "browser",
 	plugins: [
 		copy({
-			watch: true,
+		// 	watch: true,
 			assets: [
-				{
-					"from": ["./styles.css"],
-					"to": ["./styles.css"]
-				},
+		// 		{
+		// 			"from": ["./styles.css"],
+		// 			"to": ["./styles.css"]
+		// 		},
 				{
 					"from": ["./manifest.json"],
 					"to": ["./manifest.json"]
@@ -59,17 +61,22 @@ const context = await esbuild.context({
 			],
 		}),
 		inlineWorkerPlugin(),
-		/***
-		 * @higgingface/transformers detect Node env but obsidian plugins run in browser
-		 * so we need to force @higgingface/transformers to use onnxruntime-web.
-		 */
-		replace({
-      // 'const IS_BROWSER_ENV': 'const IS_BROWSER_ENV = true; //',
-      // 'const IS_WEBWORKER_ENV': 'const IS_WEBWORKER_ENV = true; //',
-      'const IS_PROCESS_AVAILABLE': 'const IS_PROCESS_AVAILABLE = false; //',
-      'const IS_NODE_ENV': 'const IS_NODE_ENV = false; //'
-    })
+		{
+      name: 'rename-css',
+      setup(build) {
+        build.onEnd(() => {
+          const mainCss = path.join('dist', 'main.css');
+          const stylesCss = path.join('dist', 'styles.css');
+
+          if (fs.existsSync(mainCss)) {
+            fs.renameSync(mainCss, stylesCss);
+            // console.log('✅ CSS renommé en styles.css');
+          }
+        });
+      }
+    }
 	],
+	jsx: "automatic"
 });
 
 if (prod) {

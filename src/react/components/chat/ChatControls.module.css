@@ -1,0 +1,123 @@
+/* Contrôles du chat (modèle + stream) */
+.chatControls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: var(--background-secondary);
+    border-top: 1px solid var(--background-modifier-border);
+    border-bottom: 1px solid var(--background-modifier-border);
+    font-size: 0.85em;
+}
+
+.chatControlsLeft {
+    display: flex;
+    align-items: center;
+}
+
+.chatControlsRight {
+    display: flex;
+    align-items: center;
+}
+
+.modelSelector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modelLabel {
+    color: var(--text-normal);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.modelDropdown {
+    background-color: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    color: var(--text-normal);
+    font-size: 0.9em;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+    min-width: 120px;
+}
+
+.modelDropdown:hover {
+    border-color: var(--interactive-accent);
+}
+
+.modelDropdown:focus {
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+}
+
+.streamToggle {
+    display: flex;
+    align-items: center;
+}
+
+.streamLabel {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: var(--text-normal);
+    font-weight: 500;
+    user-select: none;
+}
+
+.streamCheckbox {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--background-modifier-border);
+    border-radius: 3px;
+    background-color: var(--background-primary);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.streamCheckbox:checked {
+    background-color: var(--interactive-accent);
+    border-color: var(--interactive-accent);
+}
+
+.streamCheckbox:checked::after {
+    content: '✓';
+    position: absolute;
+    top: -2px;
+    left: 1px;
+    color: var(--text-on-accent);
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.streamCheckbox:hover {
+    border-color: var(--interactive-accent);
+}
+
+.streamText {
+    white-space: nowrap;
+}
+
+/* Responsive pour les contrôles */
+@media (max-width: 768px) {
+    .chatControls {
+        flex-direction: column;
+        gap: 8px;
+        align-items: stretch;
+    }
+
+    .chatControlsLeft,
+    .chatControlsRight {
+        justify-content: center;
+    }
+
+    .modelDropdown {
+        min-width: 100px;
+    }
+}

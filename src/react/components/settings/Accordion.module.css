@@ -1,0 +1,193 @@
+/* Accordion.module.css */
+
+.accordion {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-primary);
+  overflow: hidden;
+  transition: all 0.2s ease;
+  margin-bottom: .5rem;
+}
+
+.accordion:hover {
+  border-color: var(--background-modifier-border-hover);
+}
+
+.accordion.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.accordion.disabled:hover {
+  border-color: var(--background-modifier-border);
+}
+
+/* Header */
+.header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  color: var(--text-normal);
+  text-align: left;
+  gap: 12px;
+}
+
+.header:hover:not(:disabled) {
+  background: var(--background-modifier-hover);
+}
+
+.header:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--interactive-accent);
+}
+
+.header:disabled {
+  cursor: not-allowed;
+}
+
+.header.open {
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+/* Section titre avec icône optionnelle */
+.titleSection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.titleIcon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.title {
+  font-weight: 500;
+  line-height: 1.4;
+  word-break: break-word;
+  flex: 1;
+}
+
+/* Chevron d'expansion */
+.chevron {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s ease;
+  color: var(--text-muted);
+}
+
+.chevron.rotated {
+  transform: rotate(180deg);
+}
+
+/* Contenu avec animation */
+.content {
+  overflow: hidden;
+  transition: all 0.25s ease-in-out;
+}
+
+.content.expanded {
+  max-height: 1000px; /* Ajustez selon vos besoins */
+  opacity: 1;
+}
+
+.content.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
+.contentInner {
+  padding: 16px;
+  border-top: none;
+}
+
+/* Variantes de style */
+.accordion.minimal {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.accordion.minimal .header {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.accordion.minimal .header.open {
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.accordion.minimal .contentInner {
+  padding: 12px 0;
+}
+
+/* Animation plus fluide pour les accordéons avec beaucoup de contenu */
+.content.smooth {
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.2s ease-in-out;
+}
+
+/* Version compacte */
+.accordion.compact .header {
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.accordion.compact .contentInner {
+  padding: 12px;
+}
+
+/* Version avec bordure colorée */
+.accordion.accent {
+  border-left: 3px solid var(--interactive-accent);
+}
+
+.accordion.success {
+  border-left: 3px solid var(--text-success);
+}
+
+.accordion.warning {
+  border-left: 3px solid var(--text-warning);
+}
+
+.accordion.error {
+  border-left: 3px solid var(--text-error);
+}
+
+/* États spéciaux */
+.accordion.highlighted {
+  background: var(--background-modifier-form-field);
+  border-color: var(--interactive-accent);
+}
+
+.accordion.highlighted .header {
+  background: var(--background-modifier-form-field-highlighted);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .header {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .contentInner {
+    padding: 12px;
+  }
+
+  .titleSection {
+    gap: 6px;
+  }
+}

@@ -1,5 +1,6 @@
 import { App, TFile } from 'obsidian';
-import { NoteAssistantPluginSettings } from './settings';
+
+import { NoteAssistantPluginSettings } from '@/@types/settings';
 
 export class TemplateProcessor {
     private static app: App;
@@ -9,14 +10,14 @@ export class TemplateProcessor {
     }
 
     static async getTemplate(settings: NoteAssistantPluginSettings): Promise<{template: string, source: string, error?: string}> {
-        if (settings.templateSource === 'file' && settings.templateFilePath) {
+        if (settings.systemPromptTemplateSource === 'file' && settings.systemPromptTemplateFilePath) {
             try {
-                const file = this.app.vault.getAbstractFileByPath(settings.templateFilePath);
+                const file = this.app.vault.getAbstractFileByPath(settings.systemPromptTemplateFilePath);
                 if (!file || !(file instanceof TFile)) {
                     return {
                         template: '',
                         source: 'file',
-                        error: `Template file not found: ${settings.templateFilePath}`
+                        error: `Template file not found: ${settings.systemPromptTemplateFilePath}`
                     };
                 }
 
@@ -27,13 +28,13 @@ export class TemplateProcessor {
                     return {
                         template: '',
                         source: 'file',
-                        error: `Invalid template in ${settings.templateFilePath}: ${validation.error}`
+                        error: `Invalid template in ${settings.systemPromptTemplateFilePath}: ${validation.error}`
                     };
                 }
 
                 return {
                     template: content,
-                    source: `file: ${settings.templateFilePath}`
+                    source: `file: ${settings.systemPromptTemplateFilePath}`
                 };
             } catch (error) {
                 return {
@@ -44,7 +45,7 @@ export class TemplateProcessor {
             }
         } else {
             // Utiliser le template des settings
-            const validation = this.validateTemplate(settings.promptTemplate);
+            const validation = this.validateTemplate(settings.systemPromptTemplate);
             if (!validation.isValid) {
                 return {
                     template: '',
@@ -54,7 +55,7 @@ export class TemplateProcessor {
             }
 
             return {
-                template: settings.promptTemplate,
+                template: settings.systemPromptTemplate,
                 source: 'settings'
             };
         }
@@ -63,13 +64,11 @@ export class TemplateProcessor {
     static processTemplate(
         template: string,
         conversationContext: string,
-        notesContext: string,
-        question: string
+        notesContext: string
     ): string {
         return template
             .replace(/{conversation_context}/g, conversationContext)
-            .replace(/{notes_context}/g, notesContext)
-            .replace(/{question}/g, question);
+            .replace(/{notes_context}/g, notesContext);
     }
 
     static formatConversationContext(messages: Array<{role: string, content: string}>): string {
@@ -95,25 +94,12 @@ export class TemplateProcessor {
     }
 
     static getDefaultTemplate(): string {
-        return `{notes_context}{conversation_context}
-
-Q: {question}
-
-A:`;
+        return '{notes_context}{conversation_context}';
     }
 
     static validateTemplate(template: string): { isValid: boolean; error?: string } {
-        const requiredPlaceholders = ['{question}'];
         const optionalPlaceholders = ['{conversation_context}', '{notes_context}'];
-        const allPlaceholders = [...requiredPlaceholders, ...optionalPlaceholders];
-
-        // Vérifier que le placeholder obligatoire {question} est présent
-        if (!template.includes('{question}')) {
-            return {
-                isValid: false,
-                error: 'The placeholder {question} is required.'
-            };
-        }
+        const allPlaceholders = [...optionalPlaceholders];
 
         // Vérifier qu'il n'y a pas de placeholders inconnus
         const templatePlaceholders = template.match(/{[^}]+}/g) || [];
@@ -121,7 +107,7 @@ A:`;
             if (!allPlaceholders.includes(placeholder)) {
                 return {
                     isValid: false,
-                    error: `Unknown placeholder: ${placeholder}. Availables placeholders: {question}, {conversation_context}, {notes_context}`
+                    error: `Unknown placeholder: ${placeholder}. Availables placeholders: {conversation_context}, {notes_context}`
                 };
             }
         }
@@ -143,6 +129,7 @@ A:`;
                     templateFiles.push(file);
                 }
             } catch (error) {
+                console.error('getAvailableTemplateFiles', error);
                 // Ignorer les fichiers non lisibles
             }
         }

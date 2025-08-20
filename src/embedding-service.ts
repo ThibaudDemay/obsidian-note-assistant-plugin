@@ -1,58 +1,52 @@
-// embedding-service.ts - Version @huggingface/transformers CORRIGÉE
+// embedding-service.ts - Version Ollama
 import { App, TFile, Notice } from 'obsidian';
-import { NoteAssistantPluginSettings } from './settings';
-import { pipeline, env } from "@huggingface/transformers";
-import * as ort from 'onnxruntime-web';
-import { Worker } from 'worker_threads';
 
-interface EmbeddingData {
-    file: TFile;
-    content: string;
-    embedding: number[];
-    lastModified: number;
-}
+import { EmbeddingData, ParsedNote, SimilarNote } from '@/@types/embedding';
+import { NoteAssistantPluginSettings } from '@/@types/settings';
+import { OllamaService } from '@/ollama-service';
 
-export interface SimilarNote {
-    file: TFile;
-    content: string;
-    similarity: number;
-}
 export class EmbeddingService {
     private settings: NoteAssistantPluginSettings;
     private app: App;
     private embeddings: Map<string, EmbeddingData> = new Map();
-    private executor: any = null;
+    private ollamaService: OllamaService;
     private isInitialized = false;
     private isInitializing = false;
 
-    constructor(settings: NoteAssistantPluginSettings, app: App) {
+    constructor(settings: NoteAssistantPluginSettings, app: App, ollamaService: OllamaService) {
         this.settings = settings;
         this.app = app;
+        this.ollamaService = ollamaService;
     }
 
     async initialize() {
         if (this.isInitialized || this.isInitializing) return;
         this.isInitializing = true;
 
-		// env.backends.onnx = ort.env;
-        // console.log("init", env, ort)
-        // env.backends.onnx.wasm!.numThreads = 1;
-        // env.backends.onnx.wasm!.simd = false;
-        // env.backends.onnx.wasm!.proxy = false;
-        // env.backends.onnx.wasm!.wasmPaths = `app://obsidian/${this.app.vault.configDir}/plugins/note-assistant/wasm/`
+        try {
+            console.log('🔄 Initialisation des embeddings avec Ollama...');
 
-		console.log("EmbeddingService initialize");
-        console.log("this.app", this.app);
-        console.log("env", env);
-        console.log("pipeline", pipeline);
+            // Vérifier la connexion Ollama
+            const isConnected = await this.ollamaService.testConnection();
+            if (!isConnected) {
+                throw new Error('Ollama server not accessible');
+            }
 
-		try {
-            console.log('🔄 Initialisation des embeddings avec @huggingface/transformers...');
+            // Vérifier que le modèle d'embedding est disponible
+            const availableModels = await this.ollamaService.getInstalledModels();
+            const modelExists = availableModels.some(model => model.name === this.settings.embeddingModel);
 
-            // Chargement du pipeline d'embeddings
-            await this.loadPipeline();
+            if (!modelExists) {
+                throw new Error(`Embedding model '${this.settings.embeddingModel}' not found on Ollama server`);
+            }
 
-            console.log('✅ Embedding pipeline successfully loaded');
+            // Tester la génération d'un embedding simple
+            const testResult = await this.ollamaService.testEmbeddingModel(this.settings.embeddingModel);
+            if (!testResult.success) {
+                throw new Error(`Embedding test failed: ${testResult.error}`);
+            }
+
+            console.log('✅ Embedding service successfully initialized with Ollama');
             this.isInitialized = true;
 
             // Génération des embeddings en arrière-plan
@@ -60,64 +54,10 @@ export class EmbeddingService {
 
         } catch (error) {
             console.error('❌ Embedding initialization error:', error);
-            throw new Error(`Embeddings init failed: ${error.message}`);
+            throw new Error(`Embedding init failed: ${error.message}`);
         } finally {
             this.isInitializing = false;
         }
-    }
-
-    private async loadPipeline() {
-        const modelName = this.getOptimalModelName();
-        console.log('🎯 Pipeline loading:', modelName);
-
-        try {
-            console.log('📥 Creation of the feature extraction pipeline...');
-
-            this.executor = await pipeline('feature-extraction', modelName, {
-                device: "wasm"
-            });
-
-			console.log("Pipeline executor : ", this.executor);
-
-            console.log('✅ Pipeline successfully created');
-
-        } catch (pipelineError) {
-            console.error('❌ Pipeline creation error:', pipelineError);
-
-            // Fallback vers un modèle plus simple
-            // console.log('🔄 Fallback vers modèle simple...');
-            // try {
-            //     const fallbackModel = 'Xenova/all-MiniLM-L6-v2';
-            //     console.log('🔄 Tentative avec:', fallbackModel);
-
-            //     this.executor = await pipeline('feature-extraction', fallbackModel, {
-            //         device: 'wasm' // CPU plus compatible
-            //     });
-            //     console.log('✅ Pipeline fallback créé');
-            // } catch (fallbackError) {
-            //     console.error('❌ Erreur fallback:', fallbackError);
-            //     throw new Error(`Pipeline creation failed: ${fallbackError.message}`);
-            // }
-        }
-    }
-
-    private getOptimalModelName(): string {
-        // Modèles disponibles sur Hugging Face Hub
-        const modelMap: {[key: string]: string} = {
-            'paraphrase-multilingual-MiniLM-L12-v2': 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2',
-            'all-MiniLM-L6-v2': 'Xenova/all-MiniLM-L6-v2',
-            'all-mpnet-base-v2': 'sentence-transformers/all-mpnet-base-v2',
-            'multilingual-e5-small': 'intfloat/multilingual-e5-small'
-        };
-
-        const configModel = this.settings.embeddingsModel;
-
-        // Si le modèle contient déjà un namespace, l'utiliser tel quel
-        if (configModel.includes('/')) {
-            return configModel;
-        }
-
-        return modelMap[configModel] || 'Xenova/all-MiniLM-L6-v2';
     }
 
     updateSettings(settings: NoteAssistantPluginSettings) {
@@ -125,7 +65,7 @@ export class EmbeddingService {
     }
 
     private shouldIgnoreFile(file: TFile): boolean {
-        for (const folder of this.settings.embeddingsIgnoredFolders) {
+        for (const folder of this.settings.embeddingIgnoredFolders) {
             if (file.path.startsWith(folder)) {
                 return true;
             }
@@ -134,8 +74,8 @@ export class EmbeddingService {
     }
 
     private async generateEmbedding(text: string): Promise<number[]> {
-        if (!this.executor || !this.isInitialized) {
-            throw new Error('Pipeline not initialized');
+        if (!this.isInitialized) {
+            throw new Error('Embedding service not initialized');
         }
 
         try {
@@ -143,25 +83,10 @@ export class EmbeddingService {
             const maxLength = 512;
             const truncatedText = text.length > maxLength ? text.substring(0, maxLength) : text;
 
-            const result = await this.executor(truncatedText, {
-                pooling: 'mean',
-                normalize: true
-            });
+            const embedding = await this.ollamaService.generateEmbeddings(truncatedText, this.settings.embeddingModel);
 
-            // Conversion en array de nombres
-            let embedding: number[];
-
-            if (Array.isArray(result)) {
-                // Si c'est déjà un array
-                embedding = result.flat();
-            } else if (result && result.data) {
-                // Si c'est un tensor avec propriété data
-                embedding = Array.from(result.data);
-            } else if (result && typeof result === 'object') {
-                // Si c'est un objet tensor-like
-                embedding = Object.values(result).flat() as number[];
-            } else {
-                throw new Error('Unexpected pipeline result formatUnexpected pipeline result format');
+            if (!embedding || !Array.isArray(embedding) || embedding.length === 0) {
+                throw new Error('Invalid embedding response');
             }
 
             console.log(`📊 Embedding generated: ${embedding.length} dimensions`);
@@ -202,15 +127,16 @@ export class EmbeddingService {
 
     async generateEmbeddingsForAllNotes() {
         if (!this.isInitialized) {
-            console.warn('Generation postponed - pipeline not initialized');
+            console.warn('Generation postponed - service not initialized');
             return;
         }
 
         const files = this.app.vault.getMarkdownFiles();
         const validFiles = files.filter(f => !this.shouldIgnoreFile(f));
         let processed = 0;
+        let errors = 0;
 
-        console.log(`📊 Generating embeddings for ${validFiles.length} notes`);
+        console.log(`📊 Generating embeddings for ${validFiles.length} notes with ollama-js`);
 
         for (const file of validFiles) {
             try {
@@ -221,39 +147,63 @@ export class EmbeddingService {
                     new Notice(`Embeddings: ${processed}/${validFiles.length}`, 2000);
                 }
 
-                // Pause pour éviter de surcharger
+                // Pause pour éviter de surcharger Ollama
                 if (processed % 5 === 0) {
-                    await new Promise(resolve => setTimeout(resolve, 200));
+                    await new Promise(resolve => setTimeout(resolve, 300));
                 }
 
             } catch (error) {
                 console.error(`Error for ${file.path}:`, error);
+                errors++;
+
+                // Si trop d'erreurs, arrêter le processus
+                if (errors > 5) {
+                    console.error('Too many embedding errors, stopping generation');
+                    new Notice('❌ Too many errors generating embeddings. Check your embedding model.', 8000);
+                    break;
+                }
             }
         }
 
-        console.log(`✅ ${this.embeddings.size} generated embeddings`);
-        new Notice(`✅ Embeddings completed: ${this.embeddings.size} notes`);
+        const successRate = Math.round((processed / validFiles.length) * 100);
+        console.log(`✅ ${this.embeddings.size} embeddings generated (${successRate}% success rate)`);
+
+        if (errors > 0) {
+            new Notice(`⚠️ Embeddings completed: ${this.embeddings.size} notes (${errors} errors)`, 5000);
+        } else {
+            new Notice(`✅ Embeddings completed: ${this.embeddings.size} notes`, 3000);
+        }
     }
 
     async generateEmbeddingForFile(file: TFile) {
-        try {
-            const content = await this.app.vault.read(file);
-            const cleanContent = this.cleanContent(content);
+        const parsedNote = await this.parseMarkdownNote(file);
 
-            if (cleanContent.length < 20) return;
-
-            const embedding = await this.generateEmbedding(cleanContent);
-
-            this.embeddings.set(file.path, {
-                file,
-                content: cleanContent,
-                embedding,
-                lastModified: file.stat.mtime
-            });
-
-        } catch (error) {
-            throw error;
+        if (Object.keys(parsedNote.sections).length === 0) {
+            const cleanContent = this.cleanContent(parsedNote.content);
+            await this.generateEmbeddingForText(file.path, file, cleanContent);
+        } else {
+            for (let sectionName in parsedNote.sections) {
+                try {
+                    const content = parsedNote.sections[sectionName];
+                    const cleanContent = this.cleanContent(content);
+                    await this.generateEmbeddingForText(`${file.path}#${sectionName}`, file, cleanContent);
+                } catch (error) {
+                    console.error(`On file ${file.path}`, error);
+                }
+            }
         }
+    }
+
+    async generateEmbeddingForText(key: string, file: TFile, content: string) {
+        if (content.length === 0)
+            throw new Error('content empty on generate embedding');
+        const embedding = await this.generateEmbedding(content);
+        this.embeddings.set(key, {
+            file,
+            content,
+            embedding,
+            lastModified: file.stat.mtime
+        });
     }
 
     async searchSimilarNotes(query: string): Promise<SimilarNote[]> {
@@ -265,12 +215,13 @@ export class EmbeddingService {
             const queryEmbedding = await this.generateEmbedding(query);
             const similarities: SimilarNote[] = [];
 
-            for (const [path, embeddingData] of this.embeddings) {
+            for (const [key, embeddingData] of this.embeddings) {
                 const similarity = this.cosineSimilarity(queryEmbedding, embeddingData.embedding);
 
                 if (similarity > 0.1) {
                     similarities.push({
                         file: embeddingData.file,
+                        key: key,
                         content: embeddingData.content.substring(0, 500),
                         similarity
                     });
@@ -279,7 +230,7 @@ export class EmbeddingService {
 
             return similarities
                 .sort((a, b) => b.similarity - a.similarity)
-                .slice(0, this.settings.embeddingsMaxRelevantNotes);
+                .slice(0, this.settings.embeddingMaxRelevantNotes);
 
         } catch (error) {
             console.error('Search error:', error);
@@ -292,10 +243,233 @@ export class EmbeddingService {
         await this.generateEmbeddingsForAllNotes();
     }
 
+    async checkEmbeddingModelStatus(): Promise<{
+    exists: boolean;
+    loaded: boolean;
+    performance?: any;
+    testResult?: any;
+  }> {
+        try {
+            const models = await this.ollamaService.getInstalledModels();
+            const exists = models.some(model => model.name === this.settings.embeddingModel);
+
+            if (!exists) {
+                return { exists: false, loaded: false };
+            }
+
+            const loaded = await this.ollamaService.isModelLoaded(this.settings.embeddingModel);
+            const performance = await this.ollamaService.getModelPerformanceInfo(this.settings.embeddingModel);
+            const testResult = await this.ollamaService.testEmbeddingModel(this.settings.embeddingModel);
+
+            return { exists: true, loaded, performance, testResult };
+        } catch (error) {
+            console.error('EmbeddingService.checkEmbeddingModelStatus', error);
+            return { exists: false, loaded: false };
+        }
+    }
+
+    async loadEmbeddingModel(): Promise<void> {
+        if (!this.settings.embeddingModel) {
+            throw new Error('No embedding model configured');
+        }
+
+        try {
+            await this.ollamaService.loadEmbeddingModel(this.settings.embeddingModel, this.settings.embeddingModelKeepAlive);
+            console.log(`✅ Embedding model loaded: ${this.settings.embeddingModel}`);
+        } catch (error) {
+            throw new Error(`Failed to load embedding model: ${error.message}`);
+        }
+    }
+
+    // Diagnostic avancé du service d'embeddings
+    async getDiagnosticInfo(): Promise<{
+    isInitialized: boolean;
+    embeddingsCount: number;
+    embeddingDimensions: number;
+    modelStatus: any;
+    lastError?: string;
+    performance?: {
+      avgEmbeddingTime?: number;
+      totalProcessed?: number;
+    };
+  }> {
+        const modelStatus = await this.checkEmbeddingModelStatus();
+
+        return {
+            isInitialized: this.isInitialized,
+            embeddingsCount: this.embeddings.size,
+            embeddingDimensions: this.getEmbeddingsDimensions(),
+            modelStatus,
+            performance: {
+                totalProcessed: this.embeddings.size
+            }
+        };
+    }
+
+    // Méthode pour forcer la synchronisation des embeddings
+    async syncEmbeddings(): Promise<{
+    updated: number;
+    added: number;
+    removed: number;
+  }> {
+        if (!this.isInitialized) {
+            throw new Error('Embedding service not initialized');
+        }
+
+        const files = this.app.vault.getMarkdownFiles().filter(f => !this.shouldIgnoreFile(f));
+        const currentPaths = new Set(files.map(f => f.path));
+        const embeddedPaths = new Set(this.embeddings.keys());
+
+        let updated = 0;
+        let added = 0;
+        let removed = 0;
+
+        // Supprimer les embeddings pour les fichiers supprimés
+        for (const path of embeddedPaths) {
+            if (!currentPaths.has(path)) {
+                this.embeddings.delete(path);
+                removed++;
+            }
+        }
+
+        // Mettre à jour ou ajouter des embeddings
+        for (const file of files) {
+            const existing = this.embeddings.get(file.path);
+
+            if (!existing || existing.lastModified < file.stat.mtime) {
+                try {
+                    await this.generateEmbeddingForFile(file);
+                    if (existing) {
+                        updated++;
+                    } else {
+                        added++;
+                    }
+                } catch (error) {
+                    console.error(`Error syncing ${file.path}:`, error);
+                }
+            }
+        }
+
+        return { updated, added, removed };
+    }
+
+    // Recherche avancée avec filtres
+    async searchSimilarNotesAdvanced(
+        query: string,
+        options: {
+      minSimilarity?: number;
+      maxResults?: number;
+      includeContent?: boolean;
+      contentLength?: number;
+    } = {}
+    ): Promise<SimilarNote[]> {
+        const {
+            minSimilarity = 0.1,
+            maxResults = this.settings.embeddingMaxRelevantNotes,
+            includeContent = true,
+            contentLength = 500
+        } = options;
+
+        if (!this.isInitialized || this.embeddings.size === 0) {
+            return [];
+        }
+
+        try {
+            const queryEmbedding = await this.generateEmbedding(query);
+            const similarities: SimilarNote[] = [];
+
+            for (const [key, embeddingData] of this.embeddings) {
+                const similarity = this.cosineSimilarity(queryEmbedding, embeddingData.embedding);
+
+                if (similarity > minSimilarity) {
+                    similarities.push({
+                        file: embeddingData.file,
+                        key: key,
+                        content: includeContent ?
+                            embeddingData.content.substring(0, contentLength) :
+                            '',
+                        similarity
+                    });
+                }
+            }
+
+            return similarities
+                .sort((a, b) => b.similarity - a.similarity)
+                .slice(0, maxResults);
+
+        } catch (error) {
+            console.error('Advanced search error:', error);
+            return [];
+        }
+    }
+
     cleanup() {
         this.embeddings.clear();
-        this.executor = null;
         this.isInitialized = false;
         this.isInitializing = false;
     }
+
+    // Statistiques
+    getEmbeddingsCount(): number {
+        return this.embeddings.size;
+    }
+
+    getEmbeddingsDimensions(): number {
+        if (this.embeddings.size === 0) return 0;
+
+        const firstEmbedding = Array.from(this.embeddings.values())[0];
+        return firstEmbedding?.embedding?.length || 0;
+    }
+
+    // Exporter les embeddings (pour backup ou debug)
+    exportEmbeddings(): any {
+        const exported: any = {};
+
+        for (const [path, data] of this.embeddings) {
+            exported[path] = {
+                lastModified: data.lastModified,
+                contentPreview: data.content.substring(0, 100),
+                embeddingDimensions: data.embedding.length
+            };
+        }
+
+        return {
+            count: this.embeddings.size,
+            dimensions: this.getEmbeddingsDimensions(),
+            model: this.settings.embeddingModel,
+            exportedAt: new Date().toISOString(),
+            data: exported
+        };
+    }
+
+    /***
+  * Re-implemented python server functionnality
+  */
+
+    async parseMarkdownNote(file: TFile): Promise<ParsedNote> {
+        const content = await this.app.vault.read(file);
+        const metadata = await this.app.metadataCache.getFileCache(file);
+
+        // process sections
+        const sections: Record<string, string> = {};
+        if (metadata?.headings) {
+            metadata.headings.forEach((heading, index) => {
+                const nextHeading = metadata.headings?.at(index + 1);
+                const startPos = heading.position.end.offset;
+                const endPos = nextHeading ? nextHeading.position.start.offset : content.length;
+                sections[heading.heading] = content.slice(startPos, endPos).trim();
+            });
+        }
+
+        return {
+            name: file.name,
+            path: file.path,
+            title: file.basename,
+            type: metadata?.frontmatter?.type ? metadata.frontmatter.type : 'unknown',
+            tags: metadata?.frontmatter?.tags ? metadata.frontmatter.tags : [],
+            content: content.slice(metadata?.frontmatterPosition?.end?.offset, content.length).trim(),
+            sections: sections
+        };
+    }
+
 }

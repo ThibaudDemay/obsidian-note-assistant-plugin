@@ -1,0 +1,24 @@
+
+.chatMessages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+}
+
+.chatMessages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chatMessages::-webkit-scrollbar-track {
+    background: var(--background-secondary);
+}
+
+.chatMessages::-webkit-scrollbar-thumb {
+    background: var(--background-modifier-border);
+    border-radius: 3px;
+}
+
+.chatMessages::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}

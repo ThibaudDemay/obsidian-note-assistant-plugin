@@ -147,3 +147,5 @@ Thumbs.db
 
 # SPECIFIC PROJECT
 dist/
+wasm/
+src/advanced-features.ts

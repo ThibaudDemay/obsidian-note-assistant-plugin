@@ -1,0 +1,139 @@
+.globalStatusContainer {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: var(--background-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--background-modifier-border);
+}
+
+.globalStatusHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 0 15px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.globalStatusTitle {
+    margin: 0;
+    color: var(--text-accent);
+    font-size: 1.1em;
+}
+
+.statusRefreshButtonInline {
+    padding: 4px 8px;
+    background-color: var(--interactive-normal);
+    color: var(--text-normal);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.statusRefreshButtonInline:hover {
+    background-color: var(--interactive-hover);
+}
+
+.statusRefreshButtonInline:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: var(--background-modifier-border);
+}
+
+.statusList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.statusLine {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background-color: var(--background-primary);
+    border-radius: 6px;
+    border: 1px solid var(--background-modifier-border);
+    transition: all 0.2s ease;
+    min-height: 32px;
+}
+
+.statusLine:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+.statusLine.statusConnected,
+.statusLine.statusLoaded {
+    border-color: var(--color-green);
+}
+
+.statusLine.statusAvailable {
+    border-color: var(--color-yellow);
+}
+
+.statusLine.statusDisconnected,
+.statusLine.statusError {
+    border-color: var(--color-red);
+}
+
+.statusLine.statusWarning {
+    border-color: var(--color-orange);
+}
+
+.statusLine.statusDisabled {
+    opacity: 0.6;
+    border-color: var(--background-modifier-border);
+}
+
+.statusIcon {
+    font-size: 14px;
+    min-width: 16px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.statusLabel {
+    font-weight: 500;
+    color: var(--text-normal);
+    min-width: 80px;
+    flex-shrink: 0;
+}
+
+.statusInfo {
+    font-size: 0.9em;
+    color: var(--text-muted);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* =============================================== */
+/* RESPONSIF POUR MOBILES */
+/* =============================================== */
+
+@media (max-width: 768px) {
+    .statusLine {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        min-height: auto;
+    }
+
+    .statusLabel {
+        min-width: auto;
+    }
+
+    .statusInfo {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: initial;
+    }
+}

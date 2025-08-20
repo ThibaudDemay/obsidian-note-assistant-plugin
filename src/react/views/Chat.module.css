@@ -1,0 +1,7 @@
+.chatViewContainer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    /* padding: var(--size-4-3) var(--size-4-3) var(--size-4-8); */
+    padding-bottom: max(var(--safe-area-inset-bottom), var(--size-4-8));
+}
