@@ -151,7 +151,7 @@ export const Chat: React.FC = () => {
     const handleRefreshContext = async () => {
         setIsRefreshing(true);
 
-        plugin!.embeddingService.generateEmbeddingsForAllNotes();
+        await plugin!.embeddingService.generateEmbeddingsForAllNotes();
         const refreshMessage: Message = {
             role: 'system',
             content: 'Contexte actualisé ! Les nouvelles notes ont été indexées.',
