@@ -45,8 +45,6 @@ export const GlobalStatus: React.FC<SettingTabChildProps> = ({
     });
 
     const fetchOllamaStatus = async () => {
-    // console.log('fetchOllamaStatus');
-
         const isOllamaConnected = await plugin?.ollamaService.testConnection();
         if (isOllamaConnected) {
             setOllamaConnected(true);
@@ -74,7 +72,6 @@ export const GlobalStatus: React.FC<SettingTabChildProps> = ({
     };
 
     const fetchLlmModelStatus = async () => {
-    // console.log('fetchEmbeddingModelStatus');
         if (ollamaConnected && plugin?.settings.llmModel) {
             const ollamaModels = await plugin?.ollamaService.getInstalledModels();
             const llmModelInstalled = ollamaModels?.some(m => m.name === plugin.settings.llmModel);
@@ -123,7 +120,6 @@ export const GlobalStatus: React.FC<SettingTabChildProps> = ({
     };
 
     const fetchEmbeddingModelStatus = async () => {
-    // console.log('fetchLlmModelStatus');
         if (ollamaConnected && plugin?.settings.embeddingModel) {
             const ollamaModels = await plugin?.ollamaService.getInstalledModels();
             const embeddingModelExists = ollamaModels?.some(m => m.name === plugin.settings.embeddingModel);

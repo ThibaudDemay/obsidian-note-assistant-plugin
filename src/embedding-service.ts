@@ -24,8 +24,6 @@ export class EmbeddingService {
         this.isInitializing = true;
 
         try {
-            console.log('🔄 Initialisation des embeddings avec Ollama...');
-
             // Vérifier la connexion Ollama
             const isConnected = await this.ollamaService.testConnection();
             if (!isConnected) {
@@ -46,7 +44,6 @@ export class EmbeddingService {
                 throw new Error(`Embedding test failed: ${testResult.error}`);
             }
 
-            console.log('✅ Embedding service successfully initialized with Ollama');
             this.isInitialized = true;
 
             // Génération des embeddings en arrière-plan
@@ -89,7 +86,6 @@ export class EmbeddingService {
                 throw new Error('Invalid embedding response');
             }
 
-            console.log(`📊 Embedding generated: ${embedding.length} dimensions`);
             return embedding;
 
         } catch (error) {
@@ -136,8 +132,6 @@ export class EmbeddingService {
         let processed = 0;
         let errors = 0;
 
-        console.log(`📊 Generating embeddings for ${validFiles.length} notes with ollama-js`);
-
         for (const file of validFiles) {
             try {
                 await this.generateEmbeddingForFile(file);
@@ -166,7 +160,6 @@ export class EmbeddingService {
         }
 
         const successRate = Math.round((processed / validFiles.length) * 100);
-        console.log(`✅ ${this.embeddings.size} embeddings generated (${successRate}% success rate)`);
 
         if (errors > 0) {
             new Notice(`⚠️ Embeddings completed: ${this.embeddings.size} notes (${errors} errors)`, 5000);
@@ -275,7 +268,6 @@ export class EmbeddingService {
 
         try {
             await this.ollamaService.loadEmbeddingModel(this.settings.embeddingModel, this.settings.embeddingModelKeepAlive);
-            console.log(`✅ Embedding model loaded: ${this.settings.embeddingModel}`);
         } catch (error) {
             throw new Error(`Failed to load embedding model: ${error.message}`);
         }

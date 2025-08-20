@@ -134,7 +134,6 @@ export const Chat: React.FC = () => {
 
     const toggleTimestamps = () => {
         updateSettings({showTimestamps: !settings.showTimestamps});
-        console.log('Stream:', settings.showTimestamps);
     };
 
     const handleInputChange = (value: string) => {
@@ -143,17 +142,14 @@ export const Chat: React.FC = () => {
 
     const handleModelChange = (model: string) => {
         updateSettings({llmModel: model});
-        console.log('Modèle changé:', model);
     };
 
     const handleStreamToggle = () => {
         updateSettings({llmStream: !settings.llmStream});
-        console.log('Stream:', settings.llmStream);
     };
 
     const handleRefreshContext = async () => {
         setIsRefreshing(true);
-        console.log('Actualisation du contexte...');
 
         plugin!.embeddingService.generateEmbeddingsForAllNotes();
         const refreshMessage: Message = {

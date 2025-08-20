@@ -119,9 +119,6 @@ export default class NoteAssistantPlugin extends Plugin {
         } catch (error) {
             console.error('❌ Error during embedding initialization:', error);
             new Notice(`❌ Embedding initialization failed: ${error.message}`, 8000);
-
-            // Le plugin continue de fonctionner sans embeddings
-            console.log('ℹ️ Plugin will work without contextual enrichment');
         }
     }
 

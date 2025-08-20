@@ -70,7 +70,6 @@ const context = await esbuild.context({
 
           if (fs.existsSync(mainCss)) {
             fs.renameSync(mainCss, stylesCss);
-            // console.log('✅ CSS renommé en styles.css');
           }
         });
       }
