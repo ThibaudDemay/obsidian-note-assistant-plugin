@@ -4,6 +4,7 @@
     padding: 10px;
     border-top: 1px solid var(--background-modifier-border);
     background-color: var(--background-primary);
+    align-items: flex-end; /* Aligne le bouton en bas quand le textarea grandit */
 }
 
 .chatInput {
@@ -14,6 +15,20 @@
     background-color: var(--background-primary);
     color: var(--text-normal);
     outline: none;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: 1.4;
+    resize: none; /* Empêche le redimensionnement manuel */
+    overflow-y: hidden; /* Masque le scrollbar par défaut */
+    transition: height 0.1s ease; /* Animation douce lors du redimensionnement */
+
+    /* Styles spécifiques pour le textarea */
+    min-height: 40px;
+    max-height: 120px; /* Correspond à environ 5 lignes */
+
+    /* Supprime les styles par défaut du textarea */
+    box-sizing: border-box;
+    vertical-align: top;
 }
 
 .chatInput:focus {
@@ -25,6 +40,12 @@
     cursor: not-allowed;
 }
 
+/* Styles pour le placeholder */
+.chatInput::placeholder {
+    color: var(--text-faint);
+    opacity: 1;
+}
+
 .chatSendButton {
     padding: 10px 20px;
     background-color: var(--interactive-accent);
@@ -34,6 +55,8 @@
     cursor: pointer;
     font-weight: 500;
     transition: background-color 0.2s;
+    align-self: flex-end; /* Assure que le bouton reste aligné en bas */
+    flex-shrink: 0; /* Empêche le bouton de rétrécir */
 }
 
 .chatSendButton:hover:not(:disabled) {
@@ -48,13 +71,14 @@
 
 /* Responsive design */
 @media (max-width: 768px) {
-
     .chatInputContainer {
         padding: 8px;
     }
 
     .chatInput {
         padding: 8px 12px;
+        min-height: 36px;
+        max-height: 100px; /* Hauteur maximale réduite sur mobile */
     }
 
     .chatSendButton {

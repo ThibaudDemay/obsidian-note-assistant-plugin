@@ -10,9 +10,10 @@ import stylesChatMessages from './ChatMessages.module.css';
 export const ChatMessages: React.FC<{
     messages: Message[];
     showTimestamps: boolean;
+    showNotesUsed: boolean;
     isLoading: boolean;
     messagesEndRef: React.RefObject<HTMLDivElement | null>;
-}> = ({ messages, showTimestamps, isLoading, messagesEndRef }) => {
+}> = ({ messages, showTimestamps, showNotesUsed, isLoading, messagesEndRef }) => {
     return (
         <div className={stylesChatMessages.chatMessages}>
             {messages.map((message, index) => (
@@ -20,6 +21,7 @@ export const ChatMessages: React.FC<{
                     key={index}
                     message={message}
                     showTimestamps={showTimestamps}
+                    showNotesUsed={showNotesUsed}
                 />
             ))}
             {isLoading && (

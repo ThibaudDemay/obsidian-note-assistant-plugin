@@ -1,7 +1,6 @@
 // chat-view.ts
 import { ItemView, WorkspaceLeaf } from 'obsidian';
 import { Root, createRoot } from 'react-dom/client';
-import { Converter } from 'showdown';
 
 import NoteAssistantPlugin from '@/main';
 import { PluginContext } from '@/react/contexts';
@@ -12,13 +11,11 @@ export const VIEW_TYPE_OLLAMA_CHAT = 'note-assistant-chat-view';
 
 export class OllamaChatView extends ItemView {
     plugin: NoteAssistantPlugin;
-    mdConverter: Converter;
     private reactRoot: Root;
 
     constructor(leaf: WorkspaceLeaf, plugin: NoteAssistantPlugin) {
         super(leaf);
         this.plugin = plugin;
-        this.mdConverter = new Converter();
         this.reactRoot = createRoot(this.containerEl);
     }
 

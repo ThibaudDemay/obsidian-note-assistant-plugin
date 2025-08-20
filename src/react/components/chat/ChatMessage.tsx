@@ -17,7 +17,8 @@ const roleClasses = {
 export const ChatMessage: React.FC<{
     message: Message;
     showTimestamps: boolean;
-}> = ({ message, showTimestamps }) => {
+    showNotesUsed: boolean;
+}> = ({ message, showTimestamps, showNotesUsed }) => {
     const plugin = usePlugin();
 
     const handleNoteClick = (note: SimilarNote, e: React.MouseEvent) => {
@@ -43,7 +44,7 @@ export const ChatMessage: React.FC<{
                     <MarkdownView markdown={message.content} />
                 </div>
                 {/* Contexte des notes pour les messages de l'assistant */}
-                {message.role === 'assistant' && message.consultedNotes && message.consultedNotes.length > 0 && (
+                {showNotesUsed && message.role === 'assistant' && message.consultedNotes && message.consultedNotes.length > 0 && (
                     <div className={styles.chatMessageContext}>
                         <span className={styles.chatContextIcon}><ObsidianIcon iconName='library-big' /></span>
                         <span className={styles.chatContextText}>Notes consultées : </span>
@@ -54,7 +55,7 @@ export const ChatMessage: React.FC<{
                                 onClick={(e) => handleNoteClick(note, e)}
                                 title={`Ouvrir ${note.key}`}
                             >
-                                {note.key}
+                                {note.key} [{Math.round(note.similarity*10000)/100}%]
                             </span>
                         ))}
                     </div>

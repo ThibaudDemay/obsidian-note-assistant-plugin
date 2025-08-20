@@ -1,24 +1,41 @@
 import React from 'react';
 
-import { ObsidianIcon } from '../shared/ObsidianIcon';
+import { ObsidianToggleGroup, ObsidianToggleWithLabel } from '../shared/ObsidianToggle';
 import styles from './ChatHeader.module.css';
 
-export const ChatHeader: React.FC<{
+interface ChatHeaderProps {
     showTimestamps: boolean;
-    onToggleTimestamps: () => void;
-}> = ({ showTimestamps, onToggleTimestamps }) => {
+    onToggleShowTimestamps: () => void;
+    showNotes: boolean;
+    onToggleShowNotes: () => void;
+}
+
+
+export const ChatHeader: React.FC<ChatHeaderProps> = ({
+    showTimestamps,
+    onToggleShowTimestamps,
+    showNotes,
+    onToggleShowNotes
+}) => {
     return (
         <div className={styles.chatHeader}>
             <div className={styles.chatTitleContainer}>
                 <h3 className={styles.chatTitle}>Chat</h3>
             </div>
-            <button
-                className={`${styles.chatTimestampToggle} ${showTimestamps ? 'active' : ''}`}
-                onClick={onToggleTimestamps}
-                title={showTimestamps ? 'Masquer les horodatages' : 'Afficher les horodatages'}
-            >
-                <ObsidianIcon iconName='clock' />
-            </button>
+            <ObsidianToggleGroup>
+                <ObsidianToggleWithLabel
+                    label='Timestamp'
+                    labelPosition='left'
+                    checked={showTimestamps}
+                    onChange={onToggleShowTimestamps}
+                />
+                <ObsidianToggleWithLabel
+                    label='Notes'
+                    labelPosition='left'
+                    checked={showNotes}
+                    onChange={onToggleShowNotes}
+                />
+            </ObsidianToggleGroup>
         </div>
     );
 };

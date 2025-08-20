@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { ObsidianIcon } from '../shared/ObsidianIcon';
+import { ObsidianToggleWithLabel } from '../shared/ObsidianToggle';
 import styles from './ChatControls.module.css';
 
 export const ChatControls: React.FC<{
@@ -46,13 +47,12 @@ export const ChatControls: React.FC<{
             <div className={styles.chatControlsRight}>
                 <div className={styles.streamToggle}>
                     <label className={styles.streamLabel}>
-                        <input
-                            type="checkbox"
+                        <ObsidianToggleWithLabel
+                            label='Stream'
+                            labelPosition='left'
                             checked={streamEnabled}
                             onChange={onStreamToggle}
-                            className={styles.streamCheckbox}
                         />
-                        <span className={styles.streamText}>Stream</span>
                     </label>
                 </div>
             </div>

@@ -32,7 +32,7 @@ export const Chat: React.FC = () => {
         { value: '', label: 'Loading models...' }
     ]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const inputRef = useRef<HTMLInputElement>(null);
+    const inputRef = useRef<HTMLTextAreaElement>(null);
 
     const updateSettings = useCallback((updates: Partial<NoteAssistantPluginSettings>) => {
         if (plugin === undefined)
@@ -104,7 +104,7 @@ export const Chat: React.FC = () => {
         setIsLoading(true);
 
         const similarNoteContext: string = similarNotes.map((note, index) => {
-            return `NOTE ${index + 1} = ${note.file.basename} (${note.similarity}% perticence) :\n${note.content}`;
+            return `NOTE ${index + 1} = ${note.file.basename} (${note.similarity*100}% relevance) :\n${note.content}`;
         }).join('\n\n---\n\n');
 
         const simplifyMessage = (message: Message): SimplifiedMessage => ({role: message.role, content: message.content});
@@ -132,8 +132,12 @@ export const Chat: React.FC = () => {
         }
     };
 
-    const toggleTimestamps = () => {
+    const toggleShowTimestamps = () => {
         updateSettings({showTimestamps: !settings.showTimestamps});
+    };
+
+    const toggleShowNotes = () => {
+        updateSettings({showNotesUsed: !settings.showNotesUsed});
     };
 
     const handleInputChange = (value: string) => {
@@ -169,12 +173,15 @@ export const Chat: React.FC = () => {
         <div className={styles.chatViewContainer}>
             <ChatHeader
                 showTimestamps={settings.showTimestamps}
-                onToggleTimestamps={toggleTimestamps}
+                onToggleShowTimestamps={toggleShowTimestamps}
+                showNotes={settings.showNotesUsed}
+                onToggleShowNotes={toggleShowNotes}
             />
 
             <ChatMessages
                 messages={messages}
                 showTimestamps={settings.showTimestamps}
+                showNotesUsed={settings.showNotesUsed}
                 isLoading={isLoading}
                 messagesEndRef={messagesEndRef}
             />
