@@ -31,15 +31,11 @@ export const DEFAULT_SETTINGS: NoteAssistantPluginSettings = {
     embeddingIgnoredFolders: ['templates', '.obsidian'],
     embeddingMaxRelevantNotes: 5,
 
-    // Prompting settings
-    systemPromptTemplateSource: 'settings',
-    systemPromptTemplate: '',
-    systemPromptTemplateFilePath: '{notes_context} {conversation_context}',
-    systemPromptMaxHistoryLength: 10,
-
     // Chat settings
-    showNotesUsed: true,
-    showTimestamps: true,
+    chatSystemPrompt: '',
+    chatPromptMaxHistoryLength: 10,
+    chatShowNotesUsed: true,
+    chatShowTimestamps: true,
 };
 
 export class NoteAssistantSettingTab extends PluginSettingTab {

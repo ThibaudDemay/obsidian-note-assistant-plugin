@@ -13,7 +13,7 @@
     - [X] ChatSettings accordion + settings
     - [X] Sub components (Accordion, SettingItem)
     - [X] Modal pull model on Ollama
-  - [ ] Update settings merge `Prompting settings` and `Chat settings`, remove template things
+  - [X] Update settings merge `Prompting settings` and `Chat settings`, remove template things
 - [ ] ReWork Chat
   - [ ] UI using react (2/5)
     - [X] Chat react view

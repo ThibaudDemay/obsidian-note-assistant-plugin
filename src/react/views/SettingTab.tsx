@@ -8,7 +8,6 @@ import { usePlugin } from '@/react/contexts';
 import { ChatSettings } from '../components/settings/ChatSettings';
 import { EmbeddingSettings } from '../components/settings/EmbeddingSettings';
 import { LlmSettings } from '../components/settings/LlmSettings';
-import { PromptingSettings } from '../components/settings/PromptingSettings';
 
 export interface SettingTabChildProps {
     settings: NoteAssistantPluginSettings;
@@ -42,7 +41,6 @@ export const SettingTab = () => {
             <GeneralSettings settings={settings} onUpdateSettings={updateSettings} />
             <LlmSettings settings={settings} onUpdateSettings={updateSettings} />
             <EmbeddingSettings settings={settings} onUpdateSettings={updateSettings} />
-            <PromptingSettings settings={settings} onUpdateSettings={updateSettings} />
             <ChatSettings settings={settings} onUpdateSettings={updateSettings} />
         </div>
     );

@@ -8,7 +8,6 @@ import { OllamaService } from '@/ollama-service';
 import { OllamaRegistryScraper } from '@/scraper/ollama-registry';
 import '@/styles.css';
 import { NoteAssistantSettingTab, DEFAULT_SETTINGS } from '@/setting-tab';
-import { TemplateProcessor } from '@/template-processor';
 
 export default class NoteAssistantPlugin extends Plugin {
     settings: NoteAssistantPluginSettings;
@@ -18,8 +17,6 @@ export default class NoteAssistantPlugin extends Plugin {
 
     async onload() {
         await this.loadSettings();
-
-        TemplateProcessor.initialize(this.app);
 
         // Initialiser d'abord le service Ollama
         this.ollamaService = new OllamaService(this.settings);

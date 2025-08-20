@@ -89,7 +89,7 @@ export const Chat: React.FC = () => {
             console.warn('⚠️ Embedding not available:', embeddingError.message);
         }
 
-        const historyContext: Message[] = messages.slice(-settings.systemPromptMaxHistoryLength);
+        const historyContext: Message[] = messages.slice(-settings.chatPromptMaxHistoryLength);
 
         // Ajouter le message utilisateur
         const userMessage: Message = {
@@ -111,7 +111,7 @@ export const Chat: React.FC = () => {
 
         try {
             const response = await plugin!.ollamaService.chat([
-                { role: 'system', content: settings.systemPromptTemplate},
+                { role: 'system', content: settings.chatSystemPrompt},
                 { role: 'system', content: `CONTEXT OF THE OBSIDIAN NOTES: ${similarNoteContext}`},
                 ...historyContext.map(message => simplifyMessage(message)),
                 simplifyMessage(userMessage)
@@ -133,11 +133,11 @@ export const Chat: React.FC = () => {
     };
 
     const toggleShowTimestamps = () => {
-        updateSettings({showTimestamps: !settings.showTimestamps});
+        updateSettings({chatShowTimestamps: !settings.chatShowTimestamps});
     };
 
     const toggleShowNotes = () => {
-        updateSettings({showNotesUsed: !settings.showNotesUsed});
+        updateSettings({chatShowNotesUsed: !settings.chatShowNotesUsed});
     };
 
     const handleInputChange = (value: string) => {
@@ -172,16 +172,16 @@ export const Chat: React.FC = () => {
     return (
         <div className={styles.chatViewContainer}>
             <ChatHeader
-                showTimestamps={settings.showTimestamps}
+                showTimestamps={settings.chatShowTimestamps}
                 onToggleShowTimestamps={toggleShowTimestamps}
-                showNotes={settings.showNotesUsed}
+                showNotes={settings.chatShowNotesUsed}
                 onToggleShowNotes={toggleShowNotes}
             />
 
             <ChatMessages
                 messages={messages}
-                showTimestamps={settings.showTimestamps}
-                showNotesUsed={settings.showNotesUsed}
+                showTimestamps={settings.chatShowTimestamps}
+                showNotesUsed={settings.chatShowNotesUsed}
                 isLoading={isLoading}
                 messagesEndRef={messagesEndRef}
             />

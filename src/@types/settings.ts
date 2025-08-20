@@ -21,13 +21,9 @@ export interface NoteAssistantPluginSettings {
     embeddingMaxRelevantNotes: number;
     embeddingFilterModels: boolean; // filter on family to keep 'bert' families models
 
-    // Prompting settings
-    systemPromptTemplateSource: 'settings' | 'file';
-    systemPromptTemplate: string;
-    systemPromptTemplateFilePath: string;
-    systemPromptMaxHistoryLength: number; // only in generate prompting mode
-
     // Chat settings
-    showNotesUsed: boolean;
-    showTimestamps: boolean;
+    chatSystemPrompt: string;
+    chatPromptMaxHistoryLength: number; // only in generate prompting mode
+    chatShowNotesUsed: boolean;
+    chatShowTimestamps: boolean;
 }

@@ -181,7 +181,8 @@ export class EmbeddingService {
                     const cleanContent = this.cleanContent(content);
                     await this.generateEmbeddingForText(`${file.path}#${sectionName}`, file, cleanContent);
                 } catch (error) {
-                    console.error(`On file ${file.path}`, error);
+                    // new Notice(`Error on ${file.path}: section ${sectionName} empty`);
+                    console.error(error);
                 }
             }
         }
