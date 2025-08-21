@@ -1,5 +1,5 @@
-export function formatNumeric(bytes: number, type: 'si'|'us' = 'si', suffix: string = ''): string {
-    if (!bytes || bytes === 0)
+export function formatNumeric(value: number, suffix: string = '', type: 'si'|'us' = 'si'): string {
+    if (!value || value === 0)
         return suffix !== '' ? `0 ${suffix}`: '0';
 
     let sizes: string[] = [];
@@ -7,9 +7,9 @@ export function formatNumeric(bytes: number, type: 'si'|'us' = 'si', suffix: str
         sizes = ['', 'k', 'M', 'G', 'T', 'P', 'E'];
     else if (type === 'us')
         sizes = ['', 'K', 'M', 'B', 'T', 'Q', 'Qi'];
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    const i = Math.floor(Math.log(value) / Math.log(1024));
 
-    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+    return Math.round(value / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
 }
 
 export function formatDuration(ms: number): string {

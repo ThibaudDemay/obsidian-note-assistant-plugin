@@ -261,7 +261,7 @@ export const OllamaPullModal: React.FC<OllamaPullModalProps> = ({isOpen,
                                                     {isInstalled && <span className={styles.installedBadge}>✓</span>}
                                                 </span>
                                                 <span className={styles.pullCount}>
-                                                    {formatNumeric(model.pullCount, 'us')} pulls
+                                                    {formatNumeric(model.pullCount, '', 'us')} pulls
                                                 </span>
                                             </div>
                                             {model.capabilities.length > 0 && (
@@ -317,7 +317,7 @@ export const OllamaPullModal: React.FC<OllamaPullModalProps> = ({isOpen,
                                                     {isInstalled && <span className={styles.installedBadge}>✓</span>}
                                                 </span>
                                                 <span className={styles.popularPulls}>
-                                                    {formatNumeric(model.pullCount, 'us')}
+                                                    {formatNumeric(model.pullCount, '', 'us')}
                                                 </span>
                                             </div>
                                             <div className={styles.popularDesc}>{model.description}</div>
