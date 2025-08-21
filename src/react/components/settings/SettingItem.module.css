@@ -5,6 +5,10 @@
   flex-direction: column;
 }
 
+.settingItem:has(div.settingItemFullWidth) > .settingItemHeader {
+  margin-inline-end: unset;
+}
+
 .settingItemHeader {
   display: flex;
   align-items: flex-start;

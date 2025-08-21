@@ -5,6 +5,7 @@ import React, {
 } from 'react';
 
 import { ServiceStatus, StatusProps } from '@/@types/react/components/settings';
+import { EmbeddingStatus } from '@/react/components/settings';
 import { ObsidianIcon } from '@/react/components/shared';
 import { usePlugin } from '@/react/contexts';
 import { SettingTabChildProps } from '@/react/views/SettingTab';
@@ -223,6 +224,8 @@ export const GlobalStatus: React.FC<SettingTabChildProps> = ({
                 <StatusLine status={llmModelStatus} />
                 <StatusLine status={embeddingModelStatus} />
             </div>
+            {/* Composant de statut des embeddings */}
+            <EmbeddingStatus />
         </div>
     );
 };

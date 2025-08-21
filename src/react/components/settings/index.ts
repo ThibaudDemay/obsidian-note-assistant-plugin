@@ -3,6 +3,7 @@ export * from './ChatSettings';
 export * from './EmbeddingSettings';
 export * from './GeneralSettings';
 export * from './GlobalStatus';
+export * from './EmbeddingStatus';
 export * from './LlmSettings';
 export * from './OllamaPullModal';
 export * from './SettingItem';
