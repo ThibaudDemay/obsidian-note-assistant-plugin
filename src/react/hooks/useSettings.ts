@@ -1,43 +1,24 @@
+// src/react/hooks/useSettings.ts
 import { useEffect, useState } from 'react';
 
 import { NoteAssistantPluginSettings } from '@/@types';
+import { usePlugin } from '@/react/contexts';
 
-let globalSettings: NoteAssistantPluginSettings = {
-
-    // Ollama Settings
-    ollamaBaseUrl: 'http://localhost:11434',
-    ollamaAuthType: 'none',
-    ollamaAuthText: '',
-
-    // ...
-    llmStream: true,
-
-    // LLM settings
-    llmModel: 'llama3.1',
-    llmTemperature: 0.7,
-    llmTopP: 0.9,
-    llmRepeatPenalty: 1.1,
-    llmMaxTokens: 2048,
-    llmModelKeepAlive: '5m',
-
-    // Embeddings settings
-    embeddingModel: '',
-    embeddingFilterModels: true, // Filtrage activé par défaut
-    embeddingModelKeepAlive: '5m',
-    embeddingIgnoredFolders: ['templates', '.obsidian'],
-    embeddingMaxRelevantNotes: 5,
-
-    // Chat settings
-    chatSystemPrompt: '',
-    chatPromptMaxHistoryLength: 10,
-    chatShowNotesUsed: true,
-    chatShowTimestamps: true,
-};
-
+// État global des settings
+let globalSettings: NoteAssistantPluginSettings | null = null;
 let listeners = new Set<(settings: NoteAssistantPluginSettings) => void>();
 
 export const useSettings = () => {
-    const [settings, setStateSettings] = useState<NoteAssistantPluginSettings>(globalSettings);
+    const plugin = usePlugin();
+
+    // Initialiser globalSettings avec les settings du plugin si pas encore fait
+    if (!globalSettings && plugin) {
+        globalSettings = { ...plugin.settings };
+    }
+
+    const [settings, setStateSettings] = useState<NoteAssistantPluginSettings>(
+        globalSettings || plugin?.settings || {} as NoteAssistantPluginSettings
+    );
 
     useEffect(() => {
         const updateLocal = (newSettings: NoteAssistantPluginSettings) => {
@@ -50,13 +31,24 @@ export const useSettings = () => {
         };
     }, []);
 
-    const updateSettings = (newSettings: Partial<NoteAssistantPluginSettings>) => {
-        globalSettings = {
-            ...globalSettings,
-            ...newSettings
-        };
-        listeners.forEach(listener => listener(globalSettings));
+    const updateSettings = async (newSettings: Partial<NoteAssistantPluginSettings>) => {
+        if (!plugin) return;
+
+        // Mettre à jour l'état global
+        globalSettings = { ...globalSettings!, ...newSettings };
+
+        // Mettre à jour les settings du plugin
+        plugin.settings = globalSettings;
+
+        // Sauvegarder de manière asynchrone
+        await plugin.saveSettings();
+
+        // Notifier tous les listeners (tous les composants qui utilisent useSettings)
+        listeners.forEach(listener => listener(globalSettings!));
     };
 
-    return { settings, updateSettings };
+    return {
+        settings,
+        updateSettings
+    };
 };

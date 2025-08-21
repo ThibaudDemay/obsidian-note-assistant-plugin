@@ -1,28 +1,28 @@
 import { Notice } from 'obsidian';
 import React, {
-    useCallback,
     useEffect,
     useRef,
     useState
 } from 'react';
 
-import { NoteAssistantPluginSettings, SimilarNote } from '@/@types';
+import { SimilarNote } from '@/@types';
 import { DropdownItem } from '@/@types/react/components/settings';
-import { Message, SimplifiedMessage}  from '@/@types/react/views/Chat';
+import { Message, SimplifiedMessage }  from '@/@types/react/views/Chat';
 import {
     ChatControls,
     ChatHeader,
     ChatInput,
-    ChatMessages
+    ChatMessages,
 } from '@/react/components/chat';
 import { usePlugin } from '@/react/contexts';
+import { useSettings } from '@/react/hooks/useSettings';
 
 import styles from './Chat.module.css';
 
 export const Chat: React.FC = () => {
     const plugin = usePlugin();
 
-    const [settings, setSettings] = useState(plugin!.settings);
+    const { settings, updateSettings } = useSettings();
 
     const [messages, setMessages] = useState<Message[]>([
         {
@@ -41,20 +41,6 @@ export const Chat: React.FC = () => {
     ]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
-
-    const updateSettings = useCallback((updates: Partial<NoteAssistantPluginSettings>) => {
-        if (plugin === undefined)
-            return;
-        setSettings(prevSettings => {
-            const newSettings = {
-                ...prevSettings,
-                ...updates
-            };
-            plugin.settings = newSettings;
-            plugin.saveSettings();
-            return newSettings;
-        });
-    }, [plugin]);
 
     const loadLlmModels = async () => {
         const models = await plugin!.ollamaService.getLLMModels();

@@ -1,5 +1,3 @@
-import { useCallback, useState } from 'react';
-
 import { NoteAssistantPluginSettings } from '@/@types';
 import {
     ChatSettings,
@@ -8,7 +6,7 @@ import {
     GlobalStatus,
     LlmSettings
 } from '@/react/components/settings';
-import { usePlugin } from '@/react/contexts';
+import { useSettings } from '@/react/hooks/useSettings';
 
 export interface SettingTabChildProps {
     settings: NoteAssistantPluginSettings;
@@ -17,23 +15,7 @@ export interface SettingTabChildProps {
 }
 
 export const SettingTab = () => {
-    const plugin = usePlugin();
-
-    const [settings, setSettings] = useState(plugin!.settings);
-
-    const updateSettings = useCallback((updates: Partial<NoteAssistantPluginSettings>) => {
-        if (plugin === undefined)
-            return;
-        setSettings(prevSettings => {
-            const newSettings = {
-                ...prevSettings,
-                ...updates
-            };
-            plugin.settings = newSettings;
-            plugin.saveSettings();
-            return newSettings;
-        });
-    }, [plugin]);
+    const { settings, updateSettings } = useSettings();
 
     return (
         <div>
