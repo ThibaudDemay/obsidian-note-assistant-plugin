@@ -4,6 +4,7 @@ import typescriptParser from '@typescript-eslint/parser';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import perfectionist from 'eslint-plugin-perfectionist';
+import stylistic from '@stylistic/eslint-plugin';
 import globals from 'globals';
 
 export default [
@@ -28,10 +29,11 @@ export default [
       }
     },
     plugins: {
+      '@stylistic': stylistic,
       '@typescript-eslint': typescript,
+      perfectionist,
       'react': react,
       'react-hooks': reactHooks,
-      perfectionist,
     },
     rules: {
       // TypeScript rules
@@ -63,6 +65,7 @@ export default [
 
       // Perfectionist
       'perfectionist/sort-imports': 'error',
+      'perfectionist/sort-named-imports': 'error',
 
       // Vos règles personnalisées
       'no-unused-vars': 'off',
@@ -72,11 +75,18 @@ export default [
       '@typescript-eslint/no-empty-function': 'off',
 
       // Règles auto-fixables pour tester
-      'semi': ['error', 'always'],
-      'quotes': ['error', 'single'],
-      'indent': ['error', 4],
-      'no-trailing-spaces': 'error',
-      'eol-last': 'error'
+      '@stylistic/semi': ['error', 'always'],
+      '@stylistic/quotes': ['error', 'single'],
+      '@stylistic/indent': ['error', 4],
+      '@stylistic/no-trailing-spaces': 'error',
+      '@stylistic/eol-last': 'error',
+      '@stylistic/object-curly-newline': ['warn', {
+        // "ObjectExpression": "never",
+        // "ObjectPattern": "never",
+        "ImportDeclaration": { "multiline": true, "minProperties": 4, "consistent": true },
+        "ExportDeclaration": { "multiline": true, "minProperties": 4, "consistent": true }
+      }],
+      // '@stylistic/object-property-newline': ['warn', {"allowAllPropertiesOnSameLine": false}]
     },
     settings: {
       react: {

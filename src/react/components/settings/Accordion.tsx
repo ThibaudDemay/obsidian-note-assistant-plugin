@@ -1,18 +1,19 @@
 // Accordion.tsx
-import React, { useState, ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
 
-import { ObsidianIcon } from '../shared/ObsidianIcon';
+import { ObsidianIcon } from '@/react/components/shared';
+
 import styles from './Accordion.module.css';
 
 interface AccordionProps {
-  title: string;
-  children: ReactNode;
-  defaultOpen?: boolean;
-  disabled?: boolean;
-  className?: string;
-  titleClassName?: string;
-  contentClassName?: string;
-  icon?: string; // Nom de l'icône Obsidian optionnelle
+    title: string;
+    children: ReactNode;
+    defaultOpen?: boolean;
+    disabled?: boolean;
+    className?: string;
+    titleClassName?: string;
+    contentClassName?: string;
+    icon?: string; // Nom de l'icône Obsidian optionnelle
 }
 
 export const Accordion: React.FC<AccordionProps> = ({
@@ -88,9 +89,9 @@ export const useAccordionGroup = (initialOpen?: string) => {
 
 // Version contrôlée pour les groupes d'accordéons
 interface ControlledAccordionProps extends Omit<AccordionProps, 'defaultOpen'> {
-  id: string;
-  isOpen: boolean;
-  onToggle: (id: string, isOpen: boolean) => void;
+    id: string;
+    isOpen: boolean;
+    onToggle: (id: string, isOpen: boolean) => void;
 }
 
 export const ControlledAccordion: React.FC<ControlledAccordionProps> = ({

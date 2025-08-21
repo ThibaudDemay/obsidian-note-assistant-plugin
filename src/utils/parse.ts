@@ -15,11 +15,11 @@ export function parseMetricString(text: string): number {
     const suffix = match[2];
 
     switch (suffix) {
-    case 'K':
-        return number * 1000;
-    case 'M':
-        return number * 1000000;
-    default:
-        return number;
+        case 'K':
+            return number * 1000;
+        case 'M':
+            return number * 1000000;
+        default:
+            return number;
     }
 }

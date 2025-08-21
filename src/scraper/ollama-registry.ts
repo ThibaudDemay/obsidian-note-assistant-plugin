@@ -1,7 +1,11 @@
 import * as cheerio from 'cheerio';
 import { requestUrl } from 'obsidian';
 
-import { OllamaModel, OllamaModelDetails, OllamaModelDetailDescription } from '@/@types/scraper/ollama-registry';
+import {
+    OllamaModel,
+    OllamaModelDetailDescription,
+    OllamaModelDetails
+} from '@/@types/scraper/ollama-registry';
 import { parseMetricString } from '@/utils';
 
 export class OllamaRegistryScraper {

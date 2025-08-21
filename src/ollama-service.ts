@@ -1,4 +1,4 @@
-import { requestUrl, RequestUrlParam, Platform } from 'obsidian';
+import { Platform, requestUrl, RequestUrlParam } from 'obsidian';
 
 import { NoteAssistantPluginSettings } from '@/@types/settings';
 

@@ -1,13 +1,14 @@
 import { useCallback, useState } from 'react';
 
 import { NoteAssistantPluginSettings } from '@/@types';
-import { GeneralSettings } from '@/react/components/settings/GeneralSettings';
-import { GlobalStatus } from '@/react/components/settings/GlobalStatus';
+import {
+    ChatSettings,
+    EmbeddingSettings,
+    GeneralSettings,
+    GlobalStatus,
+    LlmSettings
+} from '@/react/components/settings';
 import { usePlugin } from '@/react/contexts';
-
-import { ChatSettings } from '../components/settings/ChatSettings';
-import { EmbeddingSettings } from '../components/settings/EmbeddingSettings';
-import { LlmSettings } from '../components/settings/LlmSettings';
 
 export interface SettingTabChildProps {
     settings: NoteAssistantPluginSettings;

@@ -1,5 +1,5 @@
 // embedding-service.ts - Version Ollama
-import { App, TFile, Notice } from 'obsidian';
+import { App, Notice, TFile } from 'obsidian';
 
 import { EmbeddingData, ParsedNote, SimilarNote } from '@/@types/embedding';
 import { NoteAssistantPluginSettings } from '@/@types/settings';
@@ -238,11 +238,11 @@ export class EmbeddingService {
     }
 
     async checkEmbeddingModelStatus(): Promise<{
-    exists: boolean;
-    loaded: boolean;
-    performance?: any;
-    testResult?: any;
-  }> {
+        exists: boolean;
+        loaded: boolean;
+        performance?: any;
+        testResult?: any;
+    }> {
         try {
             const models = await this.ollamaService.getInstalledModels();
             const exists = models.some(model => model.name === this.settings.embeddingModel);
@@ -276,16 +276,16 @@ export class EmbeddingService {
 
     // Diagnostic avancé du service d'embeddings
     async getDiagnosticInfo(): Promise<{
-    isInitialized: boolean;
-    embeddingsCount: number;
-    embeddingDimensions: number;
-    modelStatus: any;
-    lastError?: string;
-    performance?: {
-      avgEmbeddingTime?: number;
-      totalProcessed?: number;
-    };
-  }> {
+        isInitialized: boolean;
+        embeddingsCount: number;
+        embeddingDimensions: number;
+        modelStatus: any;
+        lastError?: string;
+        performance?: {
+            avgEmbeddingTime?: number;
+            totalProcessed?: number;
+        };
+    }> {
         const modelStatus = await this.checkEmbeddingModelStatus();
 
         return {
@@ -301,10 +301,10 @@ export class EmbeddingService {
 
     // Méthode pour forcer la synchronisation des embeddings
     async syncEmbeddings(): Promise<{
-    updated: number;
-    added: number;
-    removed: number;
-  }> {
+        updated: number;
+        added: number;
+        removed: number;
+    }> {
         if (!this.isInitialized) {
             throw new Error('Embedding service not initialized');
         }
@@ -350,11 +350,11 @@ export class EmbeddingService {
     async searchSimilarNotesAdvanced(
         query: string,
         options: {
-      minSimilarity?: number;
-      maxResults?: number;
-      includeContent?: boolean;
-      contentLength?: number;
-    } = {}
+            minSimilarity?: number;
+            maxResults?: number;
+            includeContent?: boolean;
+            contentLength?: number;
+        } = {}
     ): Promise<SimilarNote[]> {
         const {
             minSimilarity = 0.1,

@@ -1,18 +1,19 @@
 import React from 'react';
 
-import { ObsidianIcon } from '../shared/ObsidianIcon';
-import { ObsidianToggleWithLabel } from '../shared/ObsidianToggle';
+import { DropdownItem } from '@/@types/react/components/settings';
+import { ObsidianIcon, ObsidianToggleWithLabel } from '@/react/components/shared';
+
 import styles from './ChatControls.module.css';
 
 export const ChatControls: React.FC<{
     selectedModel: string;
-    availableModels: {value: string, label: string}[];
+    availableModels: DropdownItem[];
     streamEnabled: boolean;
     onModelChange: (model: string) => void;
     onStreamToggle: () => void;
     onRefreshContext: () => void;
     isRefreshing?: boolean;
-}> = ({ selectedModel, availableModels, streamEnabled, onModelChange, onStreamToggle, onRefreshContext, isRefreshing = false }) => {
+}> = ({selectedModel, availableModels, streamEnabled, onModelChange, onStreamToggle, onRefreshContext, isRefreshing = false}) => {
     return (
         <div className={styles.chatControls}>
             <div className={styles.chatControlsLeft}>

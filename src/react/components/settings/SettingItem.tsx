@@ -1,7 +1,19 @@
 import React, { useEffect, useState } from 'react';
 
-import { TextAction, DropdownAction, ExtraButtonAction, SettingItemAction,  SettingItemProps, NumberInputAction, ToggleAction, TextAreaAction, SliderAction } from '@/@types/react/components/settings/SettingItem';
-import { ObsidianIcon } from '@/react/components/shared/ObsidianIcon';
+import {
+    DropdownAction,
+    ExtraButtonAction,
+    NumberInputAction,
+    SettingItemAction,
+    SettingItemProps,
+    SliderAction,
+    TextAction,
+    TextAreaAction,
+    ToggleAction
+} from '@/@types/react/components/settings';
+import { ObsidianIcon } from '@/react/components/shared';
+
+import styles from './SettingItem.module.css';
 
 /*
 ** This files use styles from obsidian :
@@ -45,7 +57,7 @@ const TextInput: React.FC<{ action: TextAction }> = ({ action }) => {
             placeholder={action.placeholder}
             value={value}
             onChange={handleChange}
-            className="setting-text-input"
+            className={`setting-text-input ${action.fullWidth ? styles.fullWidthInput : ''}`}
         />
     );
 };
@@ -74,7 +86,7 @@ const NumberInput: React.FC<{ action: NumberInputAction }> = ({ action }) => {
             min={action.min}
             max={action.max}
             step={action.step}
-            className="setting-text-input"
+            className={`setting-text-input ${action.fullWidth ? styles.fullWidthInput : ''}`}
             disabled={action.disabled}
         />
     );
@@ -120,7 +132,7 @@ const Dropdown: React.FC<{ action: DropdownAction }> = ({ action }) => {
         <select
             value={value}
             onChange={handleChange}
-            className="dropdown"
+            className={`dropdown ${action.fullWidth ? styles.fullWidthDropdown : ''}`}
             disabled={loading}
         >
             {options.map((option, index) => (
@@ -187,7 +199,7 @@ const TextArea: React.FC<{ action: TextAreaAction }> = ({ action }) => {
             cols={action.cols}
             maxLength={action.maxLength}
             disabled={action.disabled}
-            className="setting-text-input"
+            className={`setting-text-input ${action.fullWidth ? styles.fullWidthInput : ''}`}
             style={textAreaStyle}
         />
     );
@@ -215,8 +227,15 @@ const Slider: React.FC<{ action: SliderAction }> = ({ action }) => {
         return `${val}${action.unit || ''}`;
     };
 
+    const containerStyle: React.CSSProperties = {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        minWidth: '200px'
+    };
+
     return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '200px' }}>
+        <div className={action.fullWidth ? styles.fullWidthSlider : ''} style={containerStyle}>
             <input
                 type="range"
                 min={action.min}
@@ -230,13 +249,11 @@ const Slider: React.FC<{ action: SliderAction }> = ({ action }) => {
             />
             {action.showValue !== false && (
                 <span
-                    style={{
-                        fontSize: '12px',
+                    style={{fontSize: '12px',
                         color: 'var(--text-muted)',
                         minWidth: '40px',
                         textAlign: 'right',
-                        fontFamily: 'monospace'
-                    }}
+                        fontFamily: 'monospace'}}
                 >
                     {formatDisplayValue(value)}
                 </span>
@@ -255,43 +272,60 @@ export const SettingItem: React.FC<SettingItemProps> = ({
     const extraButtons = actions.filter(action => action.type === 'extraButton') as ExtraButtonAction[];
     const otherActions = actions.filter(action => action.type !== 'extraButton');
 
+    // Séparer les actions fullWidth des actions normales
+    const fullWidthActions = otherActions.filter(action => 'fullWidth' in action && action.fullWidth);
+    const normalActions = otherActions.filter(action => !('fullWidth' in action) || !action.fullWidth);
+
     const renderAction = (action: SettingItemAction, index: number) => {
         switch (action.type) {
-        case 'text':
-            return <TextInput key={index} action={action as TextAction} />;
-        case 'number':
-            return <NumberInput key={index} action={action as NumberInputAction} />;
-        case 'dropdown':
-            return <Dropdown key={index} action={action as DropdownAction} />;
-        case 'toggle':
-            return <Toggle key={index} action={action as ToggleAction} />;
-        case 'textarea':
-            return <TextArea key={index} action={action as TextAreaAction} />;
-        case 'slider':
-            return <Slider key={index} action={action as SliderAction} />;
-        default:
-            return null;
+            case 'text':
+                return <TextInput key={index} action={action as TextAction} />;
+            case 'number':
+                return <NumberInput key={index} action={action as NumberInputAction} />;
+            case 'dropdown':
+                return <Dropdown key={index} action={action as DropdownAction} />;
+            case 'toggle':
+                return <Toggle key={index} action={action as ToggleAction} />;
+            case 'textarea':
+                return <TextArea key={index} action={action as TextAreaAction} />;
+            case 'slider':
+                return <Slider key={index} action={action as SliderAction} />;
+            default:
+                return null;
         }
     };
 
     return (
-        <div className={`setting-item ${className}`}>
-            <div className="setting-item-info">
-                <div className="setting-item-name">{name}</div>
-                <div className="setting-item-description">{description}</div>
+        <div className={`setting-item ${styles.settingItem} ${className}`}>
+            {/* Header avec info et contrôles normaux */}
+            <div className={`${styles.settingItemHeader}`}>
+                <div className="setting-item-info">
+                    <div className="setting-item-name">{name}</div>
+                    <div className="setting-item-description">{description}</div>
+                </div>
+
+                {/* Actions normales dans la zone de contrôle */}
+                {(normalActions.length > 0 || extraButtons.length > 0) && (
+                    <div className="setting-item-control">
+                        {/* Boutons extra à gauche */}
+                        {extraButtons.length > 0 &&
+                            extraButtons.map((button, index) => (
+                                <ExtraButton key={index} action={button} />
+                            ))
+                        }
+
+                        {/* Actions normales (text, dropdown) */}
+                        {normalActions.map((action, index) => renderAction(action, index))}
+                    </div>
+                )}
             </div>
 
-            <div className="setting-item-control">
-                {/* Boutons extra à gauche */}
-                {extraButtons.length > 0 &&
-            extraButtons.map((button, index) => (
-                <ExtraButton key={index} action={button} />
-            ))
-                }
-
-                {/* Autres actions (text, dropdown) */}
-                {otherActions.map((action, index) => renderAction(action, index))}
-            </div>
+            {/* Actions fullWidth en dessous */}
+            {fullWidthActions.length > 0 && (
+                <div className={styles.settingItemFullWidth}>
+                    {fullWidthActions.map((action, index) => renderAction(action, index))}
+                </div>
+            )}
         </div>
     );
 };

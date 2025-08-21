@@ -1,10 +1,10 @@
 // chat-view.ts
-import { ItemView, WorkspaceLeaf } from 'obsidian';
-import { Root, createRoot } from 'react-dom/client';
+import {ItemView, WorkspaceLeaf} from 'obsidian';
+import {createRoot, Root} from 'react-dom/client';
 
 import NoteAssistantPlugin from '@/main';
-import { PluginContext } from '@/react/contexts';
-import { Chat } from '@/react/views/Chat';
+import {PluginContext} from '@/react/contexts';
+import {Chat} from '@/react/views/Chat';
 
 
 export const VIEW_TYPE_OLLAMA_CHAT = 'note-assistant-chat-view';

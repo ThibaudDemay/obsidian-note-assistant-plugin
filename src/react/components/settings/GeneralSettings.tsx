@@ -1,41 +1,8 @@
-
-/**
-<div class="vertical-tab-content">
-  <div class="setting-item">
-    <div class="setting-item-info">
-      <div class="setting-item-name">Ollama base URL</div>
-      <div class="setting-item-description">The URL of your Ollama server</div>
-    </div>
-    <div class="setting-item-control">
-      <input
-        type="text"
-        spellcheck="false"
-        placeholder="http://localhost:11434"
-      />
-    </div>
-  </div>
-  <div class="setting-item">
-    <div class="setting-item-info">
-      <div class="setting-item-name">Authentication Type</div>
-      <div class="setting-item-description">
-        Authentication method for Ollama
-      </div>
-    </div>
-    <div class="setting-item-control">
-      <select class="dropdown">
-        <option value="none">None</option>
-        <option value="basic">Basic Authentication</option>
-        <option value="apiKey">API Key</option>
-      </select>
-    </div>
-  </div>
-</div>
-*/
 import { debounce, Notice, Platform } from 'obsidian';
 import React, {useEffect, useState} from 'react';
 
-import { useOllamaPullModal } from '@/react/components/settings/OllamaPullModal';
-import { SettingItem } from '@/react/components/settings/SettingItem';
+import { DropdownItem } from '@/@types/react/components/settings';
+import { SettingItem, useOllamaPullModal } from '@/react/components/settings';
 import { usePlugin } from '@/react/contexts/PluginContext';
 import { useSettingItem } from '@/react/hooks';
 import { SettingTabChildProps } from '@/react/views/SettingTab';
@@ -50,10 +17,10 @@ export const GeneralSettings: React.FC<SettingTabChildProps> = ({
     const { openModal, OllamaPullModalComponent } = useOllamaPullModal();
 
     // State
-    const [llmModelOptions, setLlmModelOptions] = useState([
+    const [llmModelOptions, setLlmModelOptions] = useState<DropdownItem[]>([
         { value: '', label: 'Loading models...' }
     ]);
-    const [embeddingModelOptions, setEmbeddingModelOptions] = useState([
+    const [embeddingModelOptions, setEmbeddingModelOptions] = useState<DropdownItem[]>([
         { value: '', label: 'Loading embedding models...' }
     ]);
 
@@ -65,7 +32,7 @@ export const GeneralSettings: React.FC<SettingTabChildProps> = ({
             return;
         }
         setLlmModelOptions(
-            models.map<{ value: string; label: string }>((model) => {
+            models.map<DropdownItem>((model) => {
                 return {value: model, label: model};
             }
             ));
@@ -84,7 +51,7 @@ export const GeneralSettings: React.FC<SettingTabChildProps> = ({
             return;
         }
         setEmbeddingModelOptions(
-            models.map<{ value: string; label: string }>((model) => {
+            models.map<DropdownItem>((model) => {
                 return {value: model, label: model};
             }
             ));

@@ -1,11 +1,9 @@
 import { debounce } from 'obsidian';
 import React from 'react';
 
+import { Accordion, SettingItem } from '@/react/components/settings';
 import { useSettingItem } from '@/react/hooks';
 import { SettingTabChildProps } from '@/react/views/SettingTab';
-
-import { Accordion } from './Accordion';
-import { SettingItem } from './SettingItem';
 
 export const ChatSettings: React.FC<SettingTabChildProps> =({
     settings,
@@ -18,11 +16,12 @@ export const ChatSettings: React.FC<SettingTabChildProps> =({
                 name="Prompt template"
                 description="Template with placeholders: {conversation_context}, {notes_context}"
                 actions={[
-                    createTextAreaAction(
-                        'Template for system prompt message',
-                        settings.chatSystemPrompt,
-                        debounce((value) => onUpdateSettings({chatSystemPrompt: value}))
-                    )
+                    createTextAreaAction({
+                        placeholder: 'Template for system prompt message',
+                        value: settings.chatSystemPrompt,
+                        onChange: debounce((value) => onUpdateSettings({chatSystemPrompt: value})),
+                        fullWidth: true
+                    })
                 ]}
             />
             <SettingItem

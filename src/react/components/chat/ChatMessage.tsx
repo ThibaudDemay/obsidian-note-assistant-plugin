@@ -3,9 +3,9 @@ import MarkdownView from 'react-showdown';
 
 import { SimilarNote } from '@/@types';
 import { Message } from '@/@types/react/views/Chat';
+import { ObsidianIcon } from '@/react/components/shared';
 import { usePlugin } from '@/react/contexts';
 
-import { ObsidianIcon } from '../shared/ObsidianIcon';
 import styles from './ChatMessage.module.css';
 
 const roleClasses = {
@@ -32,11 +32,9 @@ export const ChatMessage: React.FC<{
         <div className={`${styles.chatMessage} ${roleClasses[message.role] || ''}`}>
             <div className={styles.chatAvatar}>
                 {
-                    {
-                        'user': <ObsidianIcon iconName='user' /> ,
+                    {'user': <ObsidianIcon iconName='user' /> ,
                         'assistant': <ObsidianIcon iconName='bot' />,
-                        'system': <ObsidianIcon iconName='laptop' />
-                    }[message.role]
+                        'system': <ObsidianIcon iconName='laptop' />}[message.role]
                 }
             </div>
             <div className={styles.chatMessageContent}>

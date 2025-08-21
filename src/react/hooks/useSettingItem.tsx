@@ -1,17 +1,28 @@
 import React from 'react';
 
-import { TextAction, DropdownAction, ExtraButtonAction, NumberInputAction, ToggleAction, TextAreaAction, SliderAction } from '@/@types/react/components/settings/SettingItem';
+import {
+    DropdownAction,
+    DropdownItem,
+    ExtraButtonAction,
+    NumberInputAction,
+    SliderAction,
+    TextAction,
+    TextAreaAction,
+    ToggleAction
+} from '@/@types/react/components/settings';
 
 export const useSettingItem = () => {
     const createTextAction = (
         placeholder?: string,
         value?: string,
-        onChange?: (value: string) => void
+        onChange?: (value: string) => void,
+        fullWidth?: boolean
     ): TextAction => ({
         type: 'text',
         placeholder,
         value,
-        onChange
+        onChange,
+        fullWidth
     });
 
     const createNumberAction = (
@@ -21,7 +32,8 @@ export const useSettingItem = () => {
         min?: number,
         max?: number,
         step?: number,
-        disabled?: boolean
+        disabled?: boolean,
+        fullWidth?: boolean
     ): NumberInputAction => ({
         type: 'number',
         placeholder,
@@ -30,35 +42,39 @@ export const useSettingItem = () => {
         min,
         max,
         step,
-        disabled
+        disabled,
+        fullWidth
     });
 
     const createDropdownAction = (
-        options: Array<{ value: string; label: string }> | [Array<{ value: string; label: string }>, React.Dispatch<React.SetStateAction<Array<{ value: string; label: string }>>>],
+        options: Array<DropdownItem> | [Array<DropdownItem>, React.Dispatch<React.SetStateAction<Array<DropdownItem>>>],
         value?: string,
         onChange?: (value: string) => void,
-        asyncOptions?: () => Promise<Array<{ value: string; label: string }>>
+        asyncOptions?: () => Promise<Array<DropdownItem>>,
+        fullWidth?: boolean
     ): DropdownAction => {
-    // Vérifier si options est un useState tuple
+        // Vérifier si options est un useState tuple
         if (Array.isArray(options) && options.length === 2 && typeof options[1] === 'function') {
             return {
                 type: 'dropdown',
                 // options[0] is the data
-                options: options[0] as Array<{value: string; label: string;}>,
-                optionsState: options as [Array<{ value: string; label: string }>, React.Dispatch<React.SetStateAction<Array<{ value: string; label: string }>>>],
+                options: options[0] as Array<DropdownItem>,
+                optionsState: options as [Array<DropdownItem>, React.Dispatch<React.SetStateAction<Array<DropdownItem>>>],
                 value,
                 onChange,
-                asyncOptions
+                asyncOptions,
+                fullWidth
             };
         }
 
         // Sinon, c'est un array normal
         return {
             type: 'dropdown',
-            options: options as Array<{ value: string; label: string }>,
+            options: options as Array<DropdownItem>,
             value,
             onChange,
-            asyncOptions
+            asyncOptions,
+            fullWidth
         };
     };
 
@@ -71,27 +87,32 @@ export const useSettingItem = () => {
         value,
         onChange,
         disabled
+        // Note: Toggle n'a pas besoin de fullWidth car il reste toujours petit
     });
 
     const createTextAreaAction = (
-        placeholder?: string,
-        value?: string,
-        onChange?: (value: string) => void,
-        rows?: number,
-        cols?: number,
-        maxLength?: number,
-        disabled?: boolean,
-        resize?: 'none' | 'both' | 'horizontal' | 'vertical'
+        config: {
+            placeholder?: string;
+            value?: string;
+            onChange?: (value: string) => void;
+            rows?: number;
+            cols?: number;
+            maxLength?: number;
+            disabled?: boolean;
+            resize?: 'none' | 'both' | 'horizontal' | 'vertical';
+            fullWidth?: boolean;
+        } = {}
     ): TextAreaAction => ({
         type: 'textarea',
-        placeholder,
-        value,
-        onChange,
-        rows,
-        cols,
-        maxLength,
-        disabled,
-        resize
+        placeholder: config.placeholder,
+        value: config.value,
+        onChange: config.onChange,
+        rows: config.rows,
+        cols: config.cols,
+        maxLength: config.maxLength,
+        disabled: config.disabled,
+        resize: config.resize,
+        fullWidth: config.fullWidth
     });
 
     const createSliderAction = (
@@ -103,7 +124,8 @@ export const useSettingItem = () => {
         disabled?: boolean,
         showValue?: boolean,
         unit?: string,
-        formatValue?: (value: number) => string
+        formatValue?: (value: number) => string,
+        fullWidth?: boolean
     ): SliderAction => ({
         type: 'slider',
         min,
@@ -114,7 +136,8 @@ export const useSettingItem = () => {
         disabled,
         showValue,
         unit,
-        formatValue
+        formatValue,
+        fullWidth
     });
 
     const createExtraButtonAction = (

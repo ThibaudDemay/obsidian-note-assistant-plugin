@@ -1,5 +1,5 @@
 import { App, PluginSettingTab } from 'obsidian';
-import { Root, createRoot } from 'react-dom/client';
+import { createRoot, Root } from 'react-dom/client';
 
 import { NoteAssistantPluginSettings } from '@/@types/settings';
 import NoteAssistantPlugin from '@/main';

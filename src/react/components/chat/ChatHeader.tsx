@@ -1,6 +1,10 @@
 import React from 'react';
 
-import { ObsidianToggleGroup, ObsidianToggleWithLabel } from '../shared/ObsidianToggle';
+import {
+    ObsidianToggleGroup,
+    ObsidianToggleWithLabel
+} from '@/react/components/shared';
+
 import styles from './ChatHeader.module.css';
 
 interface ChatHeaderProps {

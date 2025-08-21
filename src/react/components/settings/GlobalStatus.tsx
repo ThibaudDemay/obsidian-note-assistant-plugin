@@ -1,7 +1,11 @@
-import React, { useEffect, useState, MouseEvent } from 'react';
+import React, {
+    MouseEvent,
+    useEffect,
+    useState
+} from 'react';
 
-import { ServiceStatus, StatusProps } from '@/@types/react/components/settings/GlobalStatus';
-import { ObsidianIcon } from '@/react/components/shared/ObsidianIcon';
+import { ServiceStatus, StatusProps } from '@/@types/react/components/settings';
+import { ObsidianIcon } from '@/react/components/shared';
 import { usePlugin } from '@/react/contexts';
 import { SettingTabChildProps } from '@/react/views/SettingTab';
 

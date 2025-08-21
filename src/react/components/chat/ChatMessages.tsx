@@ -1,9 +1,9 @@
 import React from 'react';
 
 import { Message } from '@/@types/react/views/Chat';
+import { ChatMessage } from '@/react/components/chat';
+import { ObsidianIcon } from '@/react/components/shared';
 
-import { ObsidianIcon } from '../shared/ObsidianIcon';
-import { ChatMessage } from './ChatMessage';
 import stylesChatMessage from './ChatMessage.module.css';
 import stylesChatMessages from './ChatMessages.module.css';
 

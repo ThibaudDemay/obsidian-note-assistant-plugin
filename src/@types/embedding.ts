@@ -2,18 +2,18 @@ import { TFile } from 'obsidian';
 
 
 export interface ParsedNoteProperties {
-  type: string,
-  tags: string[],
+    type: string,
+    tags: string[],
 }
 
 export interface ParsedNote {
-  name: string,
-  path: string,
-  title: string,
-  type: string,
-  tags: string[],
-  content: string,
-  sections: Record<string, string>
+    name: string,
+    path: string,
+    title: string,
+    type: string,
+    tags: string[],
+    content: string,
+    sections: Record<string, string>
 }
 
 export interface EmbeddingData {

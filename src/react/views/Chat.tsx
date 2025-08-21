@@ -1,12 +1,20 @@
 import { Notice } from 'obsidian';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, {
+    useCallback,
+    useEffect,
+    useRef,
+    useState
+} from 'react';
 
 import { NoteAssistantPluginSettings, SimilarNote } from '@/@types';
-import { Message, SimplifiedMessage } from '@/@types/react/views/Chat';
-import { ChatControls } from '@/react/components/chat/ChatControls';
-import { ChatHeader } from '@/react/components/chat/ChatHeader';
-import { ChatInput } from '@/react/components/chat/ChatInput';
-import { ChatMessages } from '@/react/components/chat/ChatMessages';
+import { DropdownItem } from '@/@types/react/components/settings';
+import { Message, SimplifiedMessage}  from '@/@types/react/views/Chat';
+import {
+    ChatControls,
+    ChatHeader,
+    ChatInput,
+    ChatMessages
+} from '@/react/components/chat';
 import { usePlugin } from '@/react/contexts';
 
 import styles from './Chat.module.css';
@@ -28,7 +36,7 @@ export const Chat: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
-    const [llmModelOptions, setLlmModelOptions] = useState([
+    const [llmModelOptions, setLlmModelOptions] = useState<DropdownItem[]>([
         { value: '', label: 'Loading models...' }
     ]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -54,7 +62,7 @@ export const Chat: React.FC = () => {
             setLlmModelOptions([{value: '', label: 'No LLM model found'}]);
         }
         setLlmModelOptions(
-            models.map<{ value: string; label: string }>((model) => ({ value: model, label: model }))
+            models.map<DropdownItem>((model) => ({ value: model, label: model }))
         );
     };
 
@@ -107,12 +115,15 @@ export const Chat: React.FC = () => {
             return `NOTE ${index + 1} = ${note.file.basename} (${note.similarity*100}% relevance) :\n${note.content}`;
         }).join('\n\n---\n\n');
 
-        const simplifyMessage = (message: Message): SimplifiedMessage => ({role: message.role, content: message.content});
+        const simplifyMessage = (message: Message): SimplifiedMessage => ({
+            role: message.role,
+            content: message.content
+        });
 
         try {
             const response = await plugin!.ollamaService.chat([
-                { role: 'system', content: settings.chatSystemPrompt},
-                { role: 'system', content: `CONTEXT OF THE OBSIDIAN NOTES: ${similarNoteContext}`},
+                {role: 'system', content: settings.chatSystemPrompt},
+                {role: 'system', content: `CONTEXT OF THE OBSIDIAN NOTES: ${similarNoteContext}`},
                 ...historyContext.map(message => simplifyMessage(message)),
                 simplifyMessage(userMessage)
             ]);

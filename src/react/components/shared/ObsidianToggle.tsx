@@ -121,8 +121,8 @@ export const useObsidianToggle = (initialValue: boolean = false) => {
 
 // Composant de groupe pour plusieurs toggles
 export const ObsidianToggleGroup: React.FC<{
-  children: React.ReactNode;
-  className?: string;
+    children: React.ReactNode;
+    className?: string;
 }> = ({ children, className = '' }) => {
     const groupClasses = [styles.toggleGroup, className].filter(Boolean).join(' ');
 
@@ -135,8 +135,8 @@ export const ObsidianToggleGroup: React.FC<{
 
 // Composant avec label intégré
 export const ObsidianToggleWithLabel: React.FC<ObsidianToggleProps & {
-  label: string;
-  labelPosition?: 'left' | 'right';
+    label: string;
+    labelPosition?: 'left' | 'right';
 }> = ({ label, labelPosition = 'right', id, ...toggleProps }) => {
     const toggleId = id || `toggle-${Math.random().toString(36).substr(2, 9)}`;
 

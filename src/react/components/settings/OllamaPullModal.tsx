@@ -1,13 +1,14 @@
-import {
-    ModelResponse as OllamaModelResponse
-} from 'ollama/browser';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, {
+    useEffect,
+    useMemo,
+    useState
+} from 'react';
 
 import { OllamaModel } from '@/@types';
+import { ObsidianIcon } from '@/react/components/shared';
 import { usePlugin } from '@/react/contexts';
 import { formatNumeric } from '@/utils';
 
-import { ObsidianIcon } from '../shared/ObsidianIcon';
 import styles from './OllamaPullModal.module.css';
 
 interface DownloadProgress {
@@ -46,13 +47,11 @@ const filterModelByType = (model: OllamaModel, type: 'llm'|'embedding'): boolean
     }
 };
 
-export const OllamaPullModal: React.FC<OllamaPullModalProps> = ({
-    isOpen,
+export const OllamaPullModal: React.FC<OllamaPullModalProps> = ({isOpen,
     onClose,
     onPullComplete,
     modelType = 'llm',
-    limit = 4
-}) => {
+    limit = 4}) => {
     const plugin = usePlugin();
 
     const [searchTerm, setSearchTerm] = useState('');
@@ -73,7 +72,7 @@ export const OllamaPullModal: React.FC<OllamaPullModalProps> = ({
 
         try {
             const installed = await plugin.ollamaService.getInstalledModels();
-            const installedNames = installed.map((model: OllamaModelResponse) => model.name.toLowerCase());
+            const installedNames = installed.map(model => model.name.toLowerCase());
             setInstalledModels(installedNames);
 
             await plugin.ollamaScraper.scrape();
@@ -204,7 +203,7 @@ export const OllamaPullModal: React.FC<OllamaPullModalProps> = ({
                 {/* Header */}
                 <div className={styles.header}>
                     <h3 className={styles.title}>
-              Télécharger un modèle {modelType === 'embedding' ? 'embedding' : 'LLM'}
+                        Télécharger un modèle {modelType === 'embedding' ? 'embedding' : 'LLM'}
                     </h3>
                     <button className={styles.close} onClick={onClose} disabled={isDownloading}>
                         <ObsidianIcon iconName='x' />
@@ -237,7 +236,7 @@ export const OllamaPullModal: React.FC<OllamaPullModalProps> = ({
                                     onClick={loadRegistryModels}
                                     className={styles.retryBtn}
                                 >
-                    Réessayer
+                                    Réessayer
                                 </button>
                             )}
                         </div>
@@ -301,7 +300,7 @@ export const OllamaPullModal: React.FC<OllamaPullModalProps> = ({
                     {!isDownloading && !isLoading && popularModels.length > 0 && (
                         <div className={styles.popular}>
                             <span className={styles.popularLabel}>
-                  Populaires ({modelType}):
+                                Populaires ({modelType}):
                             </span>
                             <div className={styles.popularGrid}>
                                 {popularModels.map((model) => {
@@ -346,7 +345,7 @@ export const OllamaPullModal: React.FC<OllamaPullModalProps> = ({
                                     </div>
                                     <div className={styles.downloadInfo}>
                                         <div className={styles.downloadTitle}>
-                        Téléchargement de {searchTerm}
+                                            Téléchargement de {searchTerm}
                                         </div>
                                         <div className={styles.downloadSubtitle}>
                                             {downloadProgress?.status || 'Initialisation...'}
@@ -418,9 +417,9 @@ export const useOllamaPullModal = () => {
         onPullComplete,
         limit = 4
     }: {
-    onPullComplete?: (modelName: string, modeltype: 'llm'|'embedding') => void;
-    limit?: number;
-  }) => (
+        onPullComplete?: (modelName: string, modeltype: 'llm'|'embedding') => void;
+        limit?: number;
+    }) => (
         <OllamaPullModal
             isOpen={isModalOpen}
             onClose={closeModal}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { NoteAssistantPluginSettings } from '@/@types';
 
@@ -27,15 +27,11 @@ let globalSettings: NoteAssistantPluginSettings = {
     embeddingIgnoredFolders: ['templates', '.obsidian'],
     embeddingMaxRelevantNotes: 5,
 
-    // Prompting settings
-    systemPromptTemplateSource: 'settings',
-    systemPromptTemplate: '',
-    systemPromptTemplateFilePath: '{notes_context} {conversation_context}',
-    systemPromptMaxHistoryLength: 10,
-
     // Chat settings
-    showNotesUsed: true,
-    showTimestamps: true,
+    chatSystemPrompt: '',
+    chatPromptMaxHistoryLength: 10,
+    chatShowNotesUsed: true,
+    chatShowTimestamps: true,
 };
 
 let listeners = new Set<(settings: NoteAssistantPluginSettings) => void>();
@@ -55,12 +51,12 @@ export const useSettings = () => {
     }, []);
 
     const updateSettings = (newSettings: Partial<NoteAssistantPluginSettings>) => {
-        globalSettings = { ...globalSettings, ...newSettings };
+        globalSettings = {
+            ...globalSettings,
+            ...newSettings
+        };
         listeners.forEach(listener => listener(globalSettings));
     };
 
-    return {
-        settings,
-        updateSettings
-    };
+    return { settings, updateSettings };
 };

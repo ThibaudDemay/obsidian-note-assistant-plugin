@@ -1,12 +1,9 @@
 import { debounce } from 'obsidian';
 import React from 'react';
 
+import { Accordion, SettingItem } from '@/react/components/settings';
 import { useSettingItem } from '@/react/hooks';
 import { SettingTabChildProps } from '@/react/views/SettingTab';
-
-import { Accordion } from './Accordion';
-import { SettingItem } from './SettingItem';
-
 
 export const LlmSettings: React.FC<SettingTabChildProps> = ({
     settings,

@@ -1,17 +1,20 @@
 import { debounce } from 'obsidian';
 import React from 'react';
 
+import { Accordion, SettingItem } from '@/react/components/settings';
 import { useSettingItem } from '@/react/hooks';
 import { SettingTabChildProps } from '@/react/views/SettingTab';
-
-import { Accordion } from './Accordion';
-import { SettingItem } from './SettingItem';
 
 export const EmbeddingSettings: React.FC<SettingTabChildProps> =({
     settings,
     onUpdateSettings
 }) => {
-    const { createToggleAction, createTextAction, createTextAreaAction, createSliderAction } = useSettingItem();
+    const {
+        createToggleAction,
+        createTextAction,
+        createTextAreaAction,
+        createSliderAction
+    } = useSettingItem();
     return (
         <Accordion title="Embedding Settings" icon="library-big">
             <SettingItem
@@ -39,11 +42,12 @@ export const EmbeddingSettings: React.FC<SettingTabChildProps> =({
                 name="Ignored folders"
                 description="Folders to ignore when generating embeddings (separated by commas)"
                 actions={[
-                    createTextAreaAction(
-                        '.obsidian, _templates',
-                        settings.embeddingIgnoredFolders.join(', '),
-                        debounce((value) => onUpdateSettings({embeddingIgnoredFolders: value.split(',').map(f => f.trim()).filter(f => f)}))
-                    )
+                    createTextAreaAction({
+                        placeholder: '.obsidian, _templates',
+                        value: settings.embeddingIgnoredFolders.join(', '),
+                        onChange: debounce((value) => onUpdateSettings({embeddingIgnoredFolders: value.split(',').map(f => f.trim()).filter(f => f)})),
+                        fullWidth: true
+                    })
                 ]}
             />
             <SettingItem

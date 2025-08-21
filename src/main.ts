@@ -1,13 +1,12 @@
 // main.ts
-import { Plugin, Notice, WorkspaceLeaf } from 'obsidian';
+import { Notice, Plugin, WorkspaceLeaf } from 'obsidian';
 
-import { NoteAssistantPluginSettings } from '@/@types/settings';
-import { OllamaChatView, VIEW_TYPE_OLLAMA_CHAT } from '@/chat-view';
-import { EmbeddingService } from '@/embedding-service';
-import { OllamaService } from '@/ollama-service';
-import { OllamaRegistryScraper } from '@/scraper/ollama-registry';
-import '@/styles.css';
-import { NoteAssistantSettingTab, DEFAULT_SETTINGS } from '@/setting-tab';
+import {NoteAssistantPluginSettings} from '@/@types/settings';
+import {OllamaChatView, VIEW_TYPE_OLLAMA_CHAT} from '@/chat-view';
+import {EmbeddingService} from '@/embedding-service';
+import {OllamaService} from '@/ollama-service';
+import {OllamaRegistryScraper} from '@/scraper/ollama-registry';
+import {DEFAULT_SETTINGS, NoteAssistantSettingTab} from '@/setting-tab';
 
 export default class NoteAssistantPlugin extends Plugin {
     settings: NoteAssistantPluginSettings;
