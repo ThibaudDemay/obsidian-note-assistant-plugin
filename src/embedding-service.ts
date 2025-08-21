@@ -1,73 +1,174 @@
 // embedding-service.ts - Version Ollama
-import { App, Notice, TFile } from 'obsidian';
+import { createHash } from 'crypto';
+import { debounce, Notice, TFile } from 'obsidian';
 
 import { EmbeddingData, ParsedNote, SimilarNote } from '@/@types/embedding';
-import { NoteAssistantPluginSettings } from '@/@types/settings';
-import { OllamaService } from '@/ollama-service';
+import NoteAssistantPlugin from '@/main';
+import { formatNumeric } from '@/utils/format';
+
+export interface EmbeddingDataWithHash extends EmbeddingData {
+    contentHash: string; // Hash du contenu pour détecter les changements
+    sectionName?: string; // Nom de la section si applicable
+}
+
+interface EmbeddingProgress {
+    total: number;
+    processed: number;
+    errors: number;
+    isRunning: boolean;
+}
+
 
 export class EmbeddingService {
-    private settings: NoteAssistantPluginSettings;
-    private app: App;
-    private embeddings: Map<string, EmbeddingData> = new Map();
-    private ollamaService: OllamaService;
+    private plugin: NoteAssistantPlugin;
+    private embeddings: Map<string, EmbeddingDataWithHash> = new Map();
     private isInitialized = false;
     private isInitializing = false;
+    private progress: EmbeddingProgress = {
+        total: 0,
+        processed: 0,
+        errors: 0,
+        isRunning: false
+    };
+    private embeddingModel: string;
 
-    constructor(settings: NoteAssistantPluginSettings, app: App, ollamaService: OllamaService) {
-        this.settings = settings;
-        this.app = app;
-        this.ollamaService = ollamaService;
+    // Debounced function pour éviter trop de régénérations
+    private debouncedGenerateForFile: (file: TFile) => void;
+    private hashCache = new Map<string, string>();
+
+    constructor(plugin: NoteAssistantPlugin) {
+        this.plugin = plugin;
+        this.embeddingModel = plugin.settings.llmModel;
+
+        this.debouncedGenerateForFile = debounce(
+            (file: TFile) => this.generateEmbeddingForFile(file),
+            10000,
+            true
+        );
+
+        this.setupFileWatchers();
     }
 
-    async initialize() {
-        if (this.isInitialized || this.isInitializing) return;
-        this.isInitializing = true;
+    getIsInitialized(): boolean {
+        return this.isInitialized;
+    }
 
-        try {
-            // Vérifier la connexion Ollama
-            const isConnected = await this.ollamaService.testConnection();
-            if (!isConnected) {
-                throw new Error('Ollama server not accessible');
-            }
+    checkUpdateModel(settingsModel: string) {
+        if (!this.isInitialized) return;
 
-            // Vérifier que le modèle d'embedding est disponible
-            const availableModels = await this.ollamaService.getInstalledModels();
-            const modelExists = availableModels.some(model => model.name === this.settings.embeddingModel);
-
-            if (!modelExists) {
-                throw new Error(`Embedding model '${this.settings.embeddingModel}' not found on Ollama server`);
-            }
-
-            // Tester la génération d'un embedding simple
-            const testResult = await this.ollamaService.testEmbeddingModel(this.settings.embeddingModel);
-            if (!testResult.success) {
-                throw new Error(`Embedding test failed: ${testResult.error}`);
-            }
-
-            this.isInitialized = true;
-
-            // Génération des embeddings en arrière-plan
-            // setTimeout(() => this.generateEmbeddingsForAllNotes(), 1000);
-
-        } catch (error) {
-            console.error('❌ Embedding initialization error:', error);
-            throw new Error(`Embedding init failed: ${error.message}`);
-        } finally {
-            this.isInitializing = false;
+        if (this.embeddingModel !== settingsModel) {
+            this.cleanup();
+            this.embeddingModel = settingsModel;
+            this.initialize();
         }
     }
 
-    updateSettings(settings: NoteAssistantPluginSettings) {
-        this.settings = settings;
+    private setupFileWatchers() {
+        // Écouter les modifications de fichiers
+        this.plugin.app.vault.on('modify', this.onFileModified.bind(this));
+        this.plugin.app.vault.on('create', this.onFileCreated.bind(this));
+        this.plugin.app.vault.on('delete', this.onFileDeleted.bind(this));
+        this.plugin.app.vault.on('rename', this.onFileRenamed.bind(this));
+    }
+
+    // On event
+    private onFileModified(file: TFile) {
+        if (this.shouldIgnoreFile(file)) return;
+        if (!this.isInitialized) return;
+
+        // console.log(`📝 File modified: ${file.path}`);
+        this.debouncedGenerateForFile(file);
+    }
+
+    private onFileCreated(file: TFile) {
+        if (this.shouldIgnoreFile(file)) return;
+        if (!this.isInitialized) return;
+
+        // console.log(`📄 File created: ${file.path}`);
+        this.debouncedGenerateForFile(file);
+    }
+
+    private onFileDeleted(file: TFile) {
+        if (this.shouldIgnoreFile(file)) return;
+
+        // console.log(`🗑️ File deleted: ${file.path}`);
+        this.removeEmbeddingsForFile(file.path);
+    }
+
+    private onFileRenamed(file: TFile, oldPath: string) {
+        if (this.shouldIgnoreFile(file)) return;
+
+        // console.log(`📝 File renamed: ${oldPath} → ${file.path}`);
+        this.removeEmbeddingsForFile(oldPath);
+        if (this.isInitialized) {
+            this.debouncedGenerateForFile(file);
+        }
+    }
+
+    private removeEmbeddingsForFile(filePath: string) {
+        const keysToRemove: string[] = [];
+
+        for (const key of this.embeddings.keys()) {
+            if (key.startsWith(filePath)) {
+                keysToRemove.push(key);
+            }
+        }
+
+        keysToRemove.forEach(key => {
+            this.embeddings.delete(key);
+            this.hashCache.delete(key);
+        });
+
+        if (keysToRemove.length > 0) {
+            // console.log(`🧹 Removed ${keysToRemove.length} embeddings for ${filePath}`);
+        }
+    }
+
+    private calculateContentHash(content: string): string {
+        return createHash('md5').update(content.trim()).digest('hex');
     }
 
     private shouldIgnoreFile(file: TFile): boolean {
-        for (const folder of this.settings.embeddingIgnoredFolders) {
-            if (file.path.startsWith(folder)) {
-                return true;
+        if (!file.path.endsWith('.md')) return true;
+
+        return this.plugin.settings.embeddingIgnoredFolders.some(folder =>
+            file.path.startsWith(folder + '/')
+        );
+    }
+
+    async initialize(): Promise<void> {
+        if (this.isInitialized || this.isInitializing) return;
+
+        this.isInitializing = true;
+        // console.log('🚀 Initializing EmbeddingService...');
+
+        try {
+            if (!this.plugin.settings.embeddingModel) {
+                throw new Error('No embedding model configured');
             }
+
+            // Vérifier la connexion Ollama
+            const isConnected = await this.plugin.ollamaService.testConnection();
+            if (!isConnected) {
+                throw new Error('Cannot connect to Ollama server');
+            }
+
+            // Charger le modèle d'embedding si nécessaire
+            await this.loadEmbeddingModel();
+
+            this.isInitialized = true;
+            // console.log('✅ EmbeddingService initialized successfully');
+
+            // Démarrer la génération automatique des embeddings
+            await this.generateEmbeddingsForAllNotes();
+
+        } catch (error) {
+            console.error('❌ Failed to initialize EmbeddingService:', error);
+            this.isInitializing = false;
+            throw error;
         }
-        return false;
+
+        this.isInitializing = false;
     }
 
     private async generateEmbedding(text: string): Promise<number[]> {
@@ -80,7 +181,7 @@ export class EmbeddingService {
             const maxLength = 512;
             const truncatedText = text.length > maxLength ? text.substring(0, maxLength) : text;
 
-            const embedding = await this.ollamaService.generateEmbeddings(truncatedText, this.settings.embeddingModel);
+            const embedding = await this.plugin.ollamaService.generateEmbeddings(truncatedText, this.plugin.settings.embeddingModel);
 
             if (!embedding || !Array.isArray(embedding) || embedding.length === 0) {
                 throw new Error('Invalid embedding response');
@@ -92,6 +193,217 @@ export class EmbeddingService {
             console.error('Embedding generation error:', error);
             throw error;
         }
+    }
+
+    async generateEmbeddingsForAllNotes(): Promise<void> {
+        if (!this.isInitialized) {
+            console.warn('Generation postponed - service not initialized');
+            return;
+        }
+
+        const files = this.plugin.app.vault.getMarkdownFiles().filter(f => !this.shouldIgnoreFile(f));
+
+        this.progress = {
+            total: files.length,
+            processed: 0,
+            errors: 0,
+            isRunning: true
+        };
+
+        new Notice(`🧠 Starting embeddings generation for ${files.length} notes...`, 3000);
+
+        for (const file of files) {
+            try {
+                const hasChanges = await this.fileHasChanges(file);
+
+                if (hasChanges) {
+                    await this.generateEmbeddingForFile(file);
+                    // console.log(`✅ Updated embeddings for: ${file.path}`);
+                } else {
+                    // console.log(`⏭️ Skipped (no changes): ${file.path}`);
+                }
+
+                this.progress.processed++;
+
+                // Notification de progression tous les 5 fichiers
+                if (this.progress.processed % 5 === 0) {
+                    new Notice(
+                        `🧠 Embeddings: ${this.progress.processed}/${this.progress.total}`,
+                        2000
+                    );
+                }
+
+                // Pause pour éviter de surcharger Ollama
+                if (this.progress.processed % 3 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+
+            } catch (error) {
+                console.error(`❌ Error processing ${file.path}:`, error);
+                this.progress.errors++;
+
+                // Arrêter si trop d'erreurs
+                if (this.progress.errors > 10) {
+                    new Notice('❌ Too many errors, stopping embedding generation.', 5000);
+                    break;
+                }
+            }
+        }
+
+        this.progress.isRunning = false;
+
+        const successRate = Math.round((this.progress.processed / this.progress.total) * 100);
+
+        if (this.progress.errors > 0) {
+            new Notice(
+                `⚠️ Embeddings completed: ${this.embeddings.size} notes (${this.progress.errors} errors, ${successRate}% success)`,
+                5000
+            );
+        } else {
+            new Notice(
+                `✅ Embeddings completed: ${this.embeddings.size} notes (100% success)`,
+                3000
+            );
+        }
+    }
+
+    private async fileHasChanges(file: TFile): Promise<boolean> {
+        const parsedNote = await this.parseMarkdownNote(file);
+
+        // Si le fichier n'a pas de sections, vérifier le contenu global
+        if (Object.keys(parsedNote.sections).length === 0) {
+            const cleanContent = this.cleanContent(parsedNote.content);
+            const currentHash = this.calculateContentHash(cleanContent);
+            const existingEmbedding = this.embeddings.get(file.path);
+
+            return !existingEmbedding ||
+                   existingEmbedding.contentHash !== currentHash ||
+                   existingEmbedding.lastModified < file.stat.mtime;
+        }
+
+        // Vérifier chaque section
+        for (const sectionName of Object.keys(parsedNote.sections)) {
+            const sectionKey = `${file.path}#${sectionName}`;
+            const cleanContent = this.cleanContent(parsedNote.sections[sectionName]);
+            const currentHash = this.calculateContentHash(cleanContent);
+            const existingEmbedding = this.embeddings.get(sectionKey);
+
+            if (!existingEmbedding ||
+                existingEmbedding.contentHash !== currentHash ||
+                existingEmbedding.lastModified < file.stat.mtime) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    async generateEmbeddingForFile(file: TFile): Promise<void> {
+        const parsedNote = await this.parseMarkdownNote(file);
+
+        // Supprimer les anciens embeddings pour ce fichier
+        this.removeEmbeddingsForFile(file.path);
+
+        if (Object.keys(parsedNote.sections).length === 0) {
+            const cleanContent = this.cleanContent(parsedNote.content);
+            if (cleanContent.length > 0) {
+                await this.generateEmbeddingForText(file.path, file, cleanContent);
+            }
+        } else {
+            for (const sectionName of Object.keys(parsedNote.sections)) {
+                const content = parsedNote.sections[sectionName];
+                const cleanContent = this.cleanContent(content);
+
+                if (cleanContent.length > 0) {
+                    await this.generateEmbeddingForText(
+                        `${file.path}#${sectionName}`,
+                        file,
+                        cleanContent,
+                        sectionName
+                    );
+                }
+            }
+        }
+    }
+
+    async generateEmbeddingForText(
+        key: string,
+        file: TFile,
+        content: string,
+        sectionName?: string
+    ): Promise<void> {
+        if (content.length === 0) {
+            throw new Error('Content empty for embedding generation');
+        }
+
+        const contentHash = this.calculateContentHash(content);
+
+        // Vérifier si on a déjà cet embedding avec le même hash
+        const existing = this.embeddings.get(key);
+        if (existing && existing.contentHash === contentHash) {
+            // console.log(`⏭️ Embedding unchanged for: ${key}`);
+            return;
+        }
+
+        const embedding = await this.generateEmbedding(content);
+
+        this.embeddings.set(key, {
+            file,
+            content,
+            embedding,
+            lastModified: file.stat.mtime,
+            contentHash,
+            sectionName
+        });
+
+        // Mettre à jour le cache
+        this.hashCache.set(key, contentHash);
+
+        // console.log(`💾 Stored embedding for: ${key} (${embedding.length}D)`);
+    }
+
+    // Méthode pour obtenir le statut de progression
+    getProgress(): EmbeddingProgress {
+        return { ...this.progress };
+    }
+
+    // Méthode pour forcer la régénération d'un fichier
+    async forceRegenerateFile(file: TFile): Promise<void> {
+        // console.log(`🔄 Force regenerating embeddings for: ${file.path}`);
+        this.removeEmbeddingsForFile(file.path);
+        await this.generateEmbeddingForFile(file);
+    }
+
+    // Méthode pour obtenir des statistiques détaillées
+    getDetailedStats(): {
+        totalEmbeddings: number;
+        totalFiles: number;
+        averageSectionsPerFile: number;
+        embeddingDimensions: number;
+        cacheHitRate: number;
+        diskUsageEstimate: string;
+    } {
+        const files = new Set<string>();
+        let totalSections = 0;
+
+        for (const key of this.embeddings.keys()) {
+            const filePath = key.includes('#') ? key.split('#')[0] : key;
+            files.add(filePath);
+            totalSections++;
+        }
+
+        const embeddingDimensions = this.getEmbeddingsDimensions();
+        const bytesPerEmbedding = embeddingDimensions * 4; // float32
+        const totalBytes = this.embeddings.size * bytesPerEmbedding;
+
+        return {
+            totalEmbeddings: this.embeddings.size,
+            totalFiles: files.size,
+            averageSectionsPerFile: files.size > 0 ? totalSections / files.size : 0,
+            embeddingDimensions,
+            cacheHitRate: this.hashCache.size > 0 ? (this.embeddings.size / this.hashCache.size) * 100 : 0,
+            diskUsageEstimate: formatNumeric(totalBytes, 'B')
+        };
     }
 
     private cosineSimilarity(a: number[], b: number[]): number {
@@ -121,85 +433,6 @@ export class EmbeddingService {
             .trim();
     }
 
-    async generateEmbeddingsForAllNotes() {
-        if (!this.isInitialized) {
-            console.warn('Generation postponed - service not initialized');
-            return;
-        }
-
-        const files = this.app.vault.getMarkdownFiles();
-        const validFiles = files.filter(f => !this.shouldIgnoreFile(f));
-        let processed = 0;
-        let errors = 0;
-
-        for (const file of validFiles) {
-            try {
-                await this.generateEmbeddingForFile(file);
-                processed++;
-
-                if (processed % 3 === 0) {
-                    new Notice(`Embeddings: ${processed}/${validFiles.length}`, 2000);
-                }
-
-                // Pause pour éviter de surcharger Ollama
-                if (processed % 5 === 0) {
-                    await new Promise(resolve => setTimeout(resolve, 300));
-                }
-
-            } catch (error) {
-                console.error(`Error for ${file.path}:`, error);
-                errors++;
-
-                // Si trop d'erreurs, arrêter le processus
-                if (errors > 5) {
-                    console.error('Too many embedding errors, stopping generation');
-                    new Notice('❌ Too many errors generating embeddings. Check your embedding model.', 8000);
-                    break;
-                }
-            }
-        }
-
-        const successRate = Math.round((processed / validFiles.length) * 100);
-
-        if (errors > 0) {
-            new Notice(`⚠️ Embeddings completed: ${this.embeddings.size} notes (${errors} errors)`, 5000);
-        } else {
-            new Notice(`✅ Embeddings completed: ${this.embeddings.size} notes`, 3000);
-        }
-    }
-
-    async generateEmbeddingForFile(file: TFile) {
-        const parsedNote = await this.parseMarkdownNote(file);
-
-        if (Object.keys(parsedNote.sections).length === 0) {
-            const cleanContent = this.cleanContent(parsedNote.content);
-            await this.generateEmbeddingForText(file.path, file, cleanContent);
-        } else {
-            for (let sectionName in parsedNote.sections) {
-                try {
-                    const content = parsedNote.sections[sectionName];
-                    const cleanContent = this.cleanContent(content);
-                    await this.generateEmbeddingForText(`${file.path}#${sectionName}`, file, cleanContent);
-                } catch (error) {
-                    // new Notice(`Error on ${file.path}: section ${sectionName} empty`);
-                    console.error(error);
-                }
-            }
-        }
-    }
-
-    async generateEmbeddingForText(key: string, file: TFile, content: string) {
-        if (content.length === 0)
-            throw new Error('content empty on generate embedding');
-        const embedding = await this.generateEmbedding(content);
-        this.embeddings.set(key, {
-            file,
-            content,
-            embedding,
-            lastModified: file.stat.mtime
-        });
-    }
-
     async searchSimilarNotes(query: string): Promise<SimilarNote[]> {
         if (!this.isInitialized || this.embeddings.size === 0) {
             return [];
@@ -224,7 +457,7 @@ export class EmbeddingService {
 
             return similarities
                 .sort((a, b) => b.similarity - a.similarity)
-                .slice(0, this.settings.embeddingMaxRelevantNotes);
+                .slice(0, this.plugin.settings.embeddingMaxRelevantNotes);
 
         } catch (error) {
             console.error('Search error:', error);
@@ -244,16 +477,16 @@ export class EmbeddingService {
         testResult?: any;
     }> {
         try {
-            const models = await this.ollamaService.getInstalledModels();
-            const exists = models.some(model => model.name === this.settings.embeddingModel);
+            const models = await this.plugin.ollamaService.getInstalledModels();
+            const exists = models.some(model => model.name === this.plugin.settings.embeddingModel);
 
             if (!exists) {
                 return { exists: false, loaded: false };
             }
 
-            const loaded = await this.ollamaService.isModelLoaded(this.settings.embeddingModel);
-            const performance = await this.ollamaService.getModelPerformanceInfo(this.settings.embeddingModel);
-            const testResult = await this.ollamaService.testEmbeddingModel(this.settings.embeddingModel);
+            const loaded = await this.plugin.ollamaService.isModelLoaded(this.plugin.settings.embeddingModel);
+            const performance = await this.plugin.ollamaService.getModelPerformanceInfo(this.plugin.settings.embeddingModel);
+            const testResult = await this.plugin.ollamaService.testEmbeddingModel(this.plugin.settings.embeddingModel);
 
             return { exists: true, loaded, performance, testResult };
         } catch (error) {
@@ -263,12 +496,12 @@ export class EmbeddingService {
     }
 
     async loadEmbeddingModel(): Promise<void> {
-        if (!this.settings.embeddingModel) {
+        if (!this.plugin.settings.embeddingModel) {
             throw new Error('No embedding model configured');
         }
 
         try {
-            await this.ollamaService.loadEmbeddingModel(this.settings.embeddingModel, this.settings.embeddingModelKeepAlive);
+            await this.plugin.ollamaService.loadEmbeddingModel(this.plugin.settings.embeddingModel, this.plugin.settings.embeddingModelKeepAlive);
         } catch (error) {
             throw new Error(`Failed to load embedding model: ${error.message}`);
         }
@@ -309,7 +542,7 @@ export class EmbeddingService {
             throw new Error('Embedding service not initialized');
         }
 
-        const files = this.app.vault.getMarkdownFiles().filter(f => !this.shouldIgnoreFile(f));
+        const files = this.plugin.app.vault.getMarkdownFiles().filter(f => !this.shouldIgnoreFile(f));
         const currentPaths = new Set(files.map(f => f.path));
         const embeddedPaths = new Set(this.embeddings.keys());
 
@@ -358,7 +591,7 @@ export class EmbeddingService {
     ): Promise<SimilarNote[]> {
         const {
             minSimilarity = 0.1,
-            maxResults = this.settings.embeddingMaxRelevantNotes,
+            maxResults = this.plugin.settings.embeddingMaxRelevantNotes,
             includeContent = true,
             contentLength = 500
         } = options;
@@ -396,10 +629,13 @@ export class EmbeddingService {
         }
     }
 
-    cleanup() {
+    // Nettoyage des ressources
+    cleanup(): void {
         this.embeddings.clear();
+        this.hashCache.clear();
         this.isInitialized = false;
         this.isInitializing = false;
+        this.progress = { total: 0, processed: 0, errors: 0, isRunning: false };
     }
 
     // Statistiques
@@ -429,7 +665,7 @@ export class EmbeddingService {
         return {
             count: this.embeddings.size,
             dimensions: this.getEmbeddingsDimensions(),
-            model: this.settings.embeddingModel,
+            model: this.plugin.settings.embeddingModel,
             exportedAt: new Date().toISOString(),
             data: exported
         };
@@ -440,8 +676,8 @@ export class EmbeddingService {
   */
 
     async parseMarkdownNote(file: TFile): Promise<ParsedNote> {
-        const content = await this.app.vault.read(file);
-        const metadata = await this.app.metadataCache.getFileCache(file);
+        const content = await this.plugin.app.vault.read(file);
+        const metadata = await this.plugin.app.metadataCache.getFileCache(file);
 
         // process sections
         const sections: Record<string, string> = {};

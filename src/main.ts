@@ -22,7 +22,7 @@ export default class NoteAssistantPlugin extends Plugin {
         this.ollamaScraper = new OllamaRegistryScraper();
 
         // Puis le service d'embeddings qui dépend d'Ollama
-        this.embeddingService = new EmbeddingService(this.settings, this.app, this.ollamaService);
+        this.embeddingService = new EmbeddingService(this);
 
         this.registerView(
             VIEW_TYPE_OLLAMA_CHAT,
@@ -44,7 +44,7 @@ export default class NoteAssistantPlugin extends Plugin {
         this.addCommand({
             id: 'regenerate-embeddings',
             name: 'Regenerate embeddings from notes',
-            callback: () => this.regenerateEmbeddings()
+            callback: () => this.regenerateAllEmbeddings()
         });
 
         this.addCommand({
@@ -88,59 +88,69 @@ export default class NoteAssistantPlugin extends Plugin {
     }
 
     async initializeEmbeddings() {
-        try {
-            new Notice('🔄 Initializing embeddings with Ollama...');
+        if (this.embeddingService.getIsInitialized()) return;
 
-            // Vérifier d'abord la connexion Ollama
+        try {
+            // Vérifier si le modèle d'embedding est configuré
+            if (!this.settings.embeddingModel) {
+                new Notice('⚠️ No embedding model configured. Please configure in settings.', 5000);
+                return;
+            }
+
+            // Vérifier la connexion Ollama
             const isConnected = await this.ollamaService.testConnection();
             if (!isConnected) {
-                new Notice('⚠️ Ollama server not accessible. Embeddings disabled.', 8000);
-                console.warn('Ollama server not accessible - embeddings will be disabled');
+                new Notice('⚠️ Cannot connect to Ollama. Embeddings will be disabled.', 5000);
                 return;
             }
 
-            // Vérifier que le modèle d'embedding est disponible
-            const models = await this.ollamaService.getInstalledModels();
-            const embeddingModelExists = models.some(model => model.name === this.settings.embeddingModel);
-
-            if (!embeddingModelExists && this.settings.embeddingModel) {
-                new Notice(`⚠️ Embedding model '${this.settings.embeddingModel}' not found. Check your settings.`, 8000);
-                console.warn(`Embedding model '${this.settings.embeddingModel}' not found on Ollama server`);
-                return;
-            }
-
+            console.log('🧠 Initializing embeddings...');
             await this.embeddingService.initialize();
-            new Notice('✅ Embeddings successfully initialized with Ollama');
+
+            new Notice('✅ Embedding service initialized successfully', 3000);
 
         } catch (error) {
-            console.error('❌ Error during embedding initialization:', error);
-            new Notice(`❌ Embedding initialization failed: ${error.message}`, 8000);
+            console.error('❌ Failed to initialize embeddings:', error);
+            new Notice(`❌ Failed to initialize embeddings: ${error.message}`, 5000);
         }
     }
 
-    async regenerateEmbeddings() {
-        try {
-            new Notice('🔄 Regenerating embeddings...');
-
-            // Vérifier les prérequis
-            const isConnected = await this.ollamaService.testConnection();
-            if (!isConnected) {
-                new Notice('❌ Ollama server not accessible');
-                return;
-            }
-
-            if (!this.settings.embeddingModel) {
-                new Notice('❌ No embedding model configured');
-                return;
-            }
-
-            await this.embeddingService.regenerateAllEmbeddings();
-            new Notice('✅ Embeddings successfully regenerated');
-
-        } catch (error) {
-            console.error('❌ Error during embedding regeneration:', error);
-            new Notice(`❌ Error during embedding regeneration: ${error.message}`);
+    async regenerateAllEmbeddings() {
+        if (!this.embeddingService.getIsInitialized()) {
+            new Notice('❌ Embedding service not initialized', 3000);
+            return;
         }
+
+        try {
+            new Notice('🔄 Starting full embedding regeneration...', 3000);
+            await this.embeddingService.regenerateAllEmbeddings();
+        } catch (error) {
+            console.error('Error regenerating embeddings:', error);
+            new Notice(`❌ Error regenerating embeddings: ${error.message}`, 5000);
+        }
+    }
+
+    private showEmbeddingStats() {
+        if (!this.embeddingService.getIsInitialized()) {
+            new Notice('❌ Embedding service not initialized', 3000);
+            return;
+        }
+
+        const stats = this.embeddingService.getDetailedStats();
+        const progress = this.embeddingService.getProgress();
+
+        let message = '📊 Embedding Statistics:\n';
+        message += '• Files: ${stats.totalFiles}\n';
+        message += '• Embeddings: ${stats.totalEmbeddings}\n';
+        message += '• Avg sections/file: ${stats.averageSectionsPerFile.toFixed(1)}\n';
+        message += '• Dimensions: ${stats.embeddingDimensions}\n';
+        message += '• Memory usage: ${stats.diskUsageEstimate}';
+
+        if (progress.isRunning) {
+            message += `\n\n🔄 Generation in progress: ${progress.processed}/${progress.total}`;
+        }
+
+        new Notice(message, 8000);
     }
 
     async loadLLMModel() {
@@ -211,7 +221,9 @@ export default class NoteAssistantPlugin extends Plugin {
     }
 
     onunload() {
-        this.embeddingService?.cleanup();
+        if (this.embeddingService) {
+            this.embeddingService.cleanup();
+        }
     }
 
     async loadSettings() {
@@ -220,8 +232,10 @@ export default class NoteAssistantPlugin extends Plugin {
 
     async saveSettings() {
         await this.saveData(this.settings);
-        this.embeddingService?.updateSettings(this.settings);
-        this.ollamaService?.updateSettings(this.settings);
+        if (this.ollamaService) {
+            this.ollamaService.updateSettings(this.settings);
+        }
+        this.embeddingService.checkUpdateModel(this.settings.embeddingModel);
     }
 
 }
