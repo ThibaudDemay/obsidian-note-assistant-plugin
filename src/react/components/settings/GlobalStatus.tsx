@@ -11,6 +11,7 @@ import { usePlugin } from '@/react/contexts';
 import { SettingTabChildProps } from '@/react/views/SettingTab';
 
 import styles from './GlobalStatus.module.css';
+import { useEmbeddings } from '@/react/hooks';
 
 const StatusLine: React.FC<StatusProps> = ({status}) => {
     return  (
@@ -27,6 +28,9 @@ export const GlobalStatus: React.FC<SettingTabChildProps> = ({
     onUpdateSettings
 }) => {
     const plugin = usePlugin();
+    const [embeddingState]  = useEmbeddings();
+
+    // State
     const [ollamaConnected, setOllamaConnected] = useState<boolean>(false);
     const [refresh, setRefresh] = useState<boolean>(false);
     const [ollamaStatus, setOllamaStatus] = useState<ServiceStatus>({
@@ -41,7 +45,6 @@ export const GlobalStatus: React.FC<SettingTabChildProps> = ({
         info: 'unavailable',
         class: styles.statusDisabled
     });
-
     const [embeddingModelStatus, setEmbeddingModelStatus] = useState<ServiceStatus>({
         label: 'Embedding Model:',
         icon: '⚫',
@@ -182,8 +185,8 @@ export const GlobalStatus: React.FC<SettingTabChildProps> = ({
     };
 
     const handleRefresh = async (event: MouseEvent<HTMLButtonElement>) => {
-        setRefresh(true);
         event.preventDefault();
+        setRefresh(true);
         fetchOllamaStatus().then(() => {
             fetchLlmModelStatus();
             fetchEmbeddingModelStatus();
@@ -196,7 +199,7 @@ export const GlobalStatus: React.FC<SettingTabChildProps> = ({
             fetchLlmModelStatus();
             fetchEmbeddingModelStatus();
         }).finally(() => setRefresh(false));
-    }, [settings]);
+    }, [settings, embeddingState]);
 
     useEffect(() => {
         setRefresh(true);

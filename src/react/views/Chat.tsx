@@ -98,7 +98,7 @@ export const Chat: React.FC = () => {
         setIsLoading(true);
 
         const similarNoteContext: string = similarNotes.map((note, index) => {
-            return `NOTE ${index + 1} = ${note.file.basename} (${note.similarity*100}% relevance) :\n${note.content}`;
+            return `NOTE '${note.key}' (${note.similarity*100}% relevance) :\n${note.content}`;
         }).join('\n\n---\n\n');
 
         const simplifyMessage = (message: Message): SimplifiedMessage => ({

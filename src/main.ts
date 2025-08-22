@@ -130,29 +130,6 @@ export default class NoteAssistantPlugin extends Plugin {
         }
     }
 
-    private showEmbeddingStats() {
-        if (!this.embeddingService.getIsInitialized()) {
-            new Notice('❌ Embedding service not initialized', 3000);
-            return;
-        }
-
-        const stats = this.embeddingService.getDetailedStats();
-        const progress = this.embeddingService.getProgress();
-
-        let message = '📊 Embedding Statistics:\n';
-        message += '• Files: ${stats.totalFiles}\n';
-        message += '• Embeddings: ${stats.totalEmbeddings}\n';
-        message += '• Avg sections/file: ${stats.averageSectionsPerFile.toFixed(1)}\n';
-        message += '• Dimensions: ${stats.embeddingDimensions}\n';
-        message += '• Memory usage: ${stats.diskUsageEstimate}';
-
-        if (progress.isRunning) {
-            message += `\n\n🔄 Generation in progress: ${progress.processed}/${progress.total}`;
-        }
-
-        new Notice(message, 8000);
-    }
-
     async loadLLMModel() {
         try {
             if (!this.settings.llmModel) {
@@ -235,7 +212,7 @@ export default class NoteAssistantPlugin extends Plugin {
         if (this.ollamaService) {
             this.ollamaService.updateSettings(this.settings);
         }
-        this.embeddingService.checkUpdateModel(this.settings.embeddingModel);
+        await this.embeddingService.checkUpdateModel(this.settings.embeddingModel);
     }
 
 }

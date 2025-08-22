@@ -1,87 +1,16 @@
 // src/react/components/settings/EmbeddingStatus.tsx
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import { ObsidianIcon } from '@/react/components/shared/ObsidianIcon';
-import { usePlugin } from '@/react/contexts';
+import { useEmbeddings } from '@/react/hooks/useEmbeddings';
 
 import styles from './EmbeddingStatus.module.css';
 
-interface EmbeddingStats {
-    totalEmbeddings: number;
-    totalFiles: number;
-    averageSectionsPerFile: number;
-    embeddingDimensions: number;
-    diskUsageEstimate: string;
-    isRunning: boolean;
-    progress?: {
-        processed: number;
-        total: number;
-        errors: number;
-    };
-}
-
 export const EmbeddingStatus: React.FC = () => {
-    const plugin = usePlugin();
-    const [stats, setStats] = useState<EmbeddingStats | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [embeddingState, embeddingActions] = useEmbeddings();
 
-    const refreshStats = async () => {
-        if (!plugin?.embeddingService) {
-            setStats(null);
-            setIsLoading(false);
-            return;
-        }
-
-        try {
-            const detailedStats = plugin.embeddingService.getDetailedStats();
-            const progress = plugin.embeddingService.getProgress();
-
-            setStats({
-                ...detailedStats,
-                isRunning: progress.isRunning,
-                progress: progress.isRunning ? progress : undefined
-            });
-        } catch (error) {
-            console.error('Error fetching embedding stats:', error);
-            setStats(null);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        refreshStats();
-
-        // Rafraîchir les stats toutes les 3 secondes si une génération est en cours
-        const interval = setInterval(() => {
-            if (stats?.isRunning) {
-                refreshStats();
-            }
-        }, 3000);
-
-        return () => clearInterval(interval);
-    }, [plugin, stats?.isRunning]);
-
-    const handleRegenerateAll = async () => {
-        if (!plugin?.embeddingService) return;
-
-        try {
-            setIsLoading(true);
-            await plugin.embeddingService.regenerateAllEmbeddings();
-            await refreshStats();
-        } catch (error) {
-            console.error('Error regenerating embeddings:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleRefreshStats = () => {
-        setIsLoading(true);
-        refreshStats();
-    };
-
-    if (isLoading) {
+    // État de chargement initial
+    if (embeddingState.isLoading && !embeddingState.stats) {
         return (
             <div className={styles.embeddingStatus}>
                 <div className={styles.loading}>Loading embedding stats...</div>
@@ -89,7 +18,8 @@ export const EmbeddingStatus: React.FC = () => {
         );
     }
 
-    if (!stats) {
+    // Service non initialisé
+    if (!embeddingState.isInitialized || !embeddingState.stats) {
         return (
             <div className={styles.embeddingStatus}>
                 <div className={styles.statusContent}>
@@ -99,31 +29,26 @@ export const EmbeddingStatus: React.FC = () => {
         );
     }
 
+    // Destructuring pour plus de lisibilité
+    const { progress, stats, error } = embeddingState;
+
     return (
         <div className={styles.embeddingStatus}>
             <div className={styles.statusContent}>
-                {stats.isRunning && stats.progress && (
-                    <div className={styles.progressSection}>
-                        <div className={styles.progressBar}>
-                            <div
-                                className={styles.progressFill}
-                                style={{
-                                    width: `${(stats.progress.processed / stats.progress.total) * 100}%`
-                                }}
-                            />
-                        </div>
-                        <div className={styles.progressText}>
-                            <ObsidianIcon iconName="loader" />
-                            Generating embeddings...
-                            {stats.progress.errors > 0 && (
-                                <span className={styles.progressErrors}>
-                                    ({stats.progress.errors} errors)
-                                </span>
-                            )}
-                        </div>
+                {/* Bannière d'erreur - apparaît automatiquement si error existe */}
+                {error && (
+                    <div className={styles.errorBanner}>
+                        <span><ObsidianIcon iconName='triangle-alert'/> {error.message}</span>
+                        <button
+                            onClick={embeddingActions.clearError}
+                            className={styles.clearErrorButton}
+                        >
+                            <ObsidianIcon iconName='x' />
+                        </button>
                     </div>
                 )}
 
+                {/* Grille des statistiques - se met à jour automatiquement via les événements */}
                 <div className={styles.statsGrid}>
                     <div className={styles.statItem}>
                         <span className={styles.statLabel}>Files</span>
@@ -149,29 +74,44 @@ export const EmbeddingStatus: React.FC = () => {
                     </div>
                 </div>
 
+                {/* Zone d'actions avec barre de progression intégrée */}
                 <div className={styles.actionArea}>
-                    {stats.isRunning && stats.progress && (
-                        <div className={styles.progressInfo}>
-                            {stats.progress.processed} / {stats.progress.total} files
-                        </div>
-                    )}
-                    <div className={styles.actionButtons}>
+                    <div className={styles.actionSection}>
+                        {/* Bouton de régénération avec progress à côté */}
                         <button
-                            className={styles.actionButton}
-                            onClick={handleRefreshStats}
-                            disabled={stats.isRunning}
+                            className={styles.regenerateButton}
+                            onClick={embeddingActions.regenerateAll}
+                            disabled={progress.isRunning || embeddingState.isLoading}
                         >
-                            <ObsidianIcon iconName="refresh-cw" />
-                            Refresh
+                            {progress.isRunning ? (
+                                <ObsidianIcon iconName="loader" />
+                            ) : (
+                                <ObsidianIcon iconName="rotate-ccw" />
+                            )}
+                            {progress.isRunning ? 'Generating...' : 'Regenerate All'}
                         </button>
-                        <button
-                            className={styles.actionButton}
-                            onClick={handleRegenerateAll}
-                            disabled={stats.isRunning}
-                        >
-                            <ObsidianIcon iconName="rotate-ccw" />
-                            Regenerate All
-                        </button>
+
+                        {/* Barre de progression et compteur à côté du bouton */}
+                        {progress.isRunning && (
+                            <div className={styles.progressContainer}>
+                                <div className={styles.progressBar}>
+                                    <div
+                                        className={styles.progressFill}
+                                        style={{
+                                            width: `${progress.total > 0 ? (progress.processed / progress.total) * 100 : 0}%`
+                                        }}
+                                    />
+                                </div>
+                                <div className={styles.progressInfo}>
+                                    {progress.processed} / {progress.total} files
+                                    {progress.errors > 0 && (
+                                        <span className={styles.progressErrors}>
+                                            ({progress.errors} errors)
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
