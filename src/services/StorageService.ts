@@ -5,7 +5,7 @@
  * Created At        : 25/08/2025 18:11:15
  * ----
  * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
- * Last Modified At  : 25/08/2025 22:14:50
+ * Last Modified At  : 25/08/2025 22:39:02
  */
 
 import { TFile } from 'obsidian';
@@ -63,7 +63,7 @@ export class StorageService {
 
             await this.plugin.app.vault.adapter.write(
                 embeddingsPath,
-                JSON.stringify(cacheData, null, 2)
+                JSON.stringify(cacheData, null)
             );
 
             console.log(`💾 Saved ${embeddings.size} embeddings to cache`);
@@ -193,7 +193,7 @@ export class StorageService {
 
             await this.plugin.app.vault.adapter.write(
                 conversationPath,
-                JSON.stringify(storedConversation, null, 2)
+                JSON.stringify(storedConversation, null)
             );
 
             console.log(`💾 Saved conversation: ${conversation.title}`);
