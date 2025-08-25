@@ -5,7 +5,7 @@
  * Created At        : 21/08/2025 22:09:36
  * ----
  * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
- * Last Modified At  : 25/08/2025 19:09:18
+ * Last Modified At  : 25/08/2025 21:44:56
  */
 
 import { SimilarNote } from '@/@types/services/EmbeddingService';
@@ -20,4 +20,20 @@ export interface Message {
 export interface SimplifiedMessage {
     role: 'user' | 'assistant' | 'system';
     content: string;
+}
+
+export interface StoredMessage {
+    role: 'user' | 'assistant' | 'system';
+    content: string;
+    timestamp: Date;
+    consultedNotes?: {
+        key: string;
+        content: string;
+        similarity: number;
+        file: {
+            path: string;
+            name: string;
+            basename: string;
+        };
+    }[];
 }

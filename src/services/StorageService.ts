@@ -5,13 +5,14 @@
  * Created At        : 25/08/2025 18:11:15
  * ----
  * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
- * Last Modified At  : 25/08/2025 21:20:08
+ * Last Modified At  : 25/08/2025 21:50:57
  */
 
-// src/storage-service.ts
-import { EmbeddingDataWithHash } from '@/@types';
-import { Message } from '@/@types/react/views/Chat';
-import { ConversationData, EmbeddingsCache, StorageConfig } from '@/@types/services/StorageService';
+import { TFile } from 'obsidian';
+
+import { EmbeddingDataWithHash, SimilarNote } from '@/@types';
+import { Message, StoredMessage } from '@/@types/react/views/Chat';
+import { ConversationData, EmbeddingsCache, StorageConfig, StoredConversationData } from '@/@types/services/StorageService';
 import NoteAssistantPlugin from '@/main';
 
 export class StorageService {
@@ -167,18 +168,18 @@ export class StorageService {
         try {
             const conversationPath = `${this.pluginDataDir}/${this.config.conversationsDir}/${conversation.id}.json`;
 
-            // Nettoyer les données pour éviter les références circulaires
-            const cleanedMessages = this.sanitizeMessages(conversation.messages);
-
-            const dataToSave = {
-                ...conversation,
-                messages: cleanedMessages,
+            // Convertir vers le format de stockage
+            const storedConversation: StoredConversationData = {
+                id: conversation.id,
+                title: conversation.title,
+                messages: this.convertToStoredMessages(conversation.messages),
+                createdAt: conversation.createdAt,
                 updatedAt: Date.now()
             };
 
             await this.plugin.app.vault.adapter.write(
                 conversationPath,
-                JSON.stringify(dataToSave, null)
+                JSON.stringify(storedConversation, null, 2)
             );
 
             console.log(`💾 Saved conversation: ${conversation.title}`);
@@ -200,13 +201,18 @@ export class StorageService {
             }
 
             const data = await this.plugin.app.vault.adapter.read(conversationPath);
-            const parsed = JSON.parse(data);
+            const storedConversation: StoredConversationData = JSON.parse(data);
 
-            // Restaurer les messages avec les bonnes dates
-            return {
-                ...parsed,
-                messages: this.restoreMessages(parsed.messages || [])
-            } as ConversationData;
+            // Convertir vers le format runtime
+            const conversation: ConversationData = {
+                id: storedConversation.id,
+                title: storedConversation.title,
+                messages: this.convertFromStoredMessages(storedConversation.messages || []),
+                createdAt: storedConversation.createdAt,
+                updatedAt: storedConversation.updatedAt
+            };
+
+            return conversation;
 
         } catch (error) {
             console.error('❌ Error loading conversation:', error);
@@ -225,11 +231,17 @@ export class StorageService {
                 if (file.endsWith('.json')) {
                     try {
                         const data = await this.plugin.app.vault.adapter.read(file);
-                        const parsed = JSON.parse(data);
+                        const storedConversation: StoredConversationData = JSON.parse(data);
+
+                        // Convertir vers le format runtime
                         const conversation: ConversationData = {
-                            ...parsed,
-                            messages: this.restoreMessages(parsed.messages || [])
+                            id: storedConversation.id,
+                            title: storedConversation.title,
+                            messages: this.convertFromStoredMessages(storedConversation.messages || []),
+                            createdAt: storedConversation.createdAt,
+                            updatedAt: storedConversation.updatedAt
                         };
+
                         conversations.push(conversation);
                     } catch (error) {
                         console.error(`❌ Error loading conversation ${file}:`, error);
@@ -275,18 +287,16 @@ export class StorageService {
 
     /* ===== UTILITAIRES ===== */
 
-    // Nettoyer les messages pour la sérialisation JSON
-    private sanitizeMessages(messages: Message[]): Message[] {
+    // Convertir les messages runtime vers le format de stockage
+    private convertToStoredMessages(messages: Message[]): StoredMessage[] {
         return messages.map(message => ({
             role: message.role,
             content: message.content,
             timestamp: message.timestamp,
-            // Nettoyer consultedNotes pour éviter les références circulaires
             consultedNotes: message.consultedNotes?.map(note => ({
                 key: note.key,
                 content: note.content,
                 similarity: note.similarity,
-                // Sérialiser seulement les propriétés essentielles du fichier
                 file: {
                     path: note.file.path,
                     name: note.file.name,
@@ -296,23 +306,32 @@ export class StorageService {
         }));
     }
 
-    // Restaurer les messages après désérialisation
-    private restoreMessages(messages: any[]): Message[] {
-        return messages.map(message => ({
+    // Convertir les messages stockés vers le format runtime
+    private convertFromStoredMessages(storedMessages: StoredMessage[]): Message[] {
+        return storedMessages.map(message => ({
             role: message.role,
             content: message.content,
-            timestamp: new Date(message.timestamp),
-            consultedNotes: message.consultedNotes?.map((note: any) => ({
-                key: note.key,
-                content: note.content,
-                similarity: note.similarity,
-                // Recréer une référence minimale au fichier
-                file: {
-                    path: note.file.path,
-                    name: note.file.name,
-                    basename: note.file.basename
-                } as any
-            }))
+            timestamp: new Date(message.timestamp), // S'assurer que c'est une Date
+            consultedNotes: message.consultedNotes?.map(note => {
+                // Essayer de retrouver le vrai fichier TFile depuis le vault
+                const realFile = this.plugin.app.vault.getAbstractFileByPath(note.file.path);
+
+                return {
+                    key: note.key,
+                    content: note.content,
+                    similarity: note.similarity,
+                    // Utiliser le vrai fichier si disponible, sinon créer un mock TFile complet
+                    file: (realFile instanceof TFile) ? realFile : {
+                        path: note.file.path,
+                        name: note.file.name,
+                        basename: note.file.basename,
+                        extension: note.file.path.split('.').pop() || '',
+                        stat: { mtime: 0, ctime: 0, size: 0 },
+                        vault: this.plugin.app.vault,
+                        parent: null
+                    } as TFile
+                } as SimilarNote;
+            })
         }));
     }
 
