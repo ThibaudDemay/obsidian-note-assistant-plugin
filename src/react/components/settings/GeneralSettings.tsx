@@ -1,11 +1,22 @@
+/*
+ * File Name         : GeneralSettings.tsx
+ * Description       : General settings component including Ollama connection and model selection
+ *                     for LLM and embeddings.
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 21/08/2025 22:09:36
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 21:15:42
+ */
+
 import { debounce, Notice, Platform } from 'obsidian';
 import React, {useEffect, useState} from 'react';
 
 import { DropdownItem } from '@/@types/react/components/settings';
+import { SettingTabChildProps } from '@/@types/react/views/SettingTab';
 import { SettingItem, useOllamaPullModal } from '@/react/components/settings';
 import { usePlugin } from '@/react/contexts/PluginContext';
 import { useSettingItem } from '@/react/hooks';
-import { SettingTabChildProps } from '@/react/views/SettingTab';
 
 export const GeneralSettings: React.FC<SettingTabChildProps> = ({
     settings,

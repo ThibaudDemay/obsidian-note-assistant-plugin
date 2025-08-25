@@ -6,6 +6,59 @@
         "typescriptreact"
     ],
     "eslint.workingDirectories": ["."],
+    "psi-header.config": {
+        "author": "Thibaud Demay",
+        "authorEmail": "thibaud@demay.dev",
+        "initials": "TD",
+        "forceToTop": true,
+		"blankLinesAfter": 1,
+    },
+    "psi-header.changes-tracking": {
+		"isActive": true,
+		"modAuthor": "Last Modified By  :",
+		"modDate": "Last Modified At  :",
+		"modDateFormat": "DD/MM/YYYY HH:mm:s",
+		"include": [],
+		"includeGlob": [],
+		"exclude": ["markdown", "json", "jsonc", "shellscript"],
+		"excludeGlob": ["./**/*/ignoreme.*"],
+		"autoHeader": "autoSave",
+		"enforceHeader": true,
+		"updateLicenseVariables": false
+	},
+    "psi-header.variables": [
+		["projectCreationYear", "2025"]
+	],
+    "psi-header.templates": [
+        {
+            "language": "javascript",
+            "template": [
+                "File Name         : <<fileName>>",
+                "Description       : !! description !!",
+                "Author            : <<author>> (<<authoremail>>)",
+                "Created At        : <<filecreated('DD/MM/YYYY HH:mm:ss')>>",
+                "----",
+                "Last Modified By  : <<author>> (<<authoremail>>)",
+                "Last Modified At  : <<dateformat('DD/MM/YYYY HH:mm:ss')>>",
+            ]
+        },
+        {
+			"language": "typescript",
+			"mapTo": "javascript"
+		},
+                {
+			"language": "javascriptreact",
+			"mapTo": "javascript"
+		},
+                {
+			"language": "typescriptreact",
+			"mapTo": "javascript"
+		},
+        {
+            "language": "css",
+            "mapTo": "javascript"
+        }
+    ],
     "[javascript]": {
         "editor.tabSize": 4
     },

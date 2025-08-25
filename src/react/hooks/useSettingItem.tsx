@@ -1,3 +1,13 @@
+/*
+ * File Name         : useSettingItem.tsx
+ * Description       : Setting item hook to create setting items actions easily
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 21/08/2025 22:09:36
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 21:07:11
+ */
+
 import React from 'react';
 
 import {

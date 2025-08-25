@@ -1,3 +1,13 @@
+/*
+ * File Name         : OllamaRegistryScraperService.ts
+ * Description       : Ollama registry scraper service to fetch and parse model data from Ollama's registry
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 25/08/2025 18:11:15
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 21:13:20
+ */
+
 import * as cheerio from 'cheerio';
 import { requestUrl } from 'obsidian';
 
@@ -5,10 +15,10 @@ import {
     OllamaModel,
     OllamaModelDetailDescription,
     OllamaModelDetails
-} from '@/@types/scraper/ollama-registry';
+} from '@/@types/services/OllamaRegistryScraperService';
 import { parseMetricString } from '@/utils';
 
-export class OllamaRegistryScraper {
+export class OllamaRegistryScraperService {
     private baseUrl: string;
     private models: OllamaModel[] = [];
     private lastScrapeDate: Date | null = null;

@@ -1,0 +1,469 @@
+/*
+ * File Name         : NoConversationState.module.css
+ * Description       : Styles for the "no conversation state" component
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 25/08/2025 18:11:15
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 19:51:20
+ */
+
+.noConversationState {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    padding: 40px 20px;
+    background: var(--background-primary);
+    overflow-y: auto;
+}
+
+.noConversationContent {
+    text-align: center;
+    max-width: 500px;
+    width: 100%;
+}
+
+.noConversationIcon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.7;
+}
+
+.noConversationTitle {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-normal);
+    margin: 0 0 12px 0;
+}
+
+.noConversationText {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0 0 24px 0;
+}
+
+.noConversationActions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+
+.newConversationButtonLarge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-width: 200px;
+}
+
+.newConversationButtonLarge:hover {
+    background: var(--interactive-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.newConversationButtonLarge:active {
+    transform: translateY(0);
+}
+
+/* Conversations récentes */
+.recentConversations {
+    width: 100%;
+    max-width: 400px;
+}
+
+.recentConversationsTitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-normal);
+    margin: 0 0 16px 0;
+    text-align: center;
+}
+
+.recentConversationsList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.recentConversationItem {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px 16px;
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+    width: 100%;
+    min-height: 60px; /* Assurer une hauteur minimale */
+}
+
+.recentConversationItem:hover {
+    background: var(--background-modifier-hover);
+    border-color: var(--interactive-accent);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.recentConversationTitle {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-normal, #000); /* Fallback au noir si la variable n'existe pas */
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    width: 100%;
+    line-height: 1.4; /* Assurer une hauteur de ligne correcte */
+}
+
+.recentConversationTitle[data-auto-generated="true"] {
+    color: var(--text-muted, #666); /* Fallback au gris si la variable n'existe pas */
+    font-style: italic;
+}
+
+.recentConversationMeta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.recentMessageCount {
+    background: var(--background-modifier-border);
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 10px;
+}
+
+.recentDate {
+    font-variant-numeric: tabular-nums;
+}
+
+.moreConversationsHint {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin: 12px 0 0 0;
+    text-align: center;
+}
+
+.noConversationHint {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin: 0;
+    text-align: center;
+    line-height: 1.4;
+}
+
+/* Animation d'apparition */
+.noConversationState {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animation pour les conversations récentes */
+.recentConversationsList {
+    animation: slideIn 0.4s ease-out 0.1s both;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .noConversationState {
+        padding: 20px 16px;
+    }
+
+    .noConversationContent {
+        max-width: 350px;
+    }
+
+    .noConversationIcon {
+        font-size: 40px;
+        margin-bottom: 12px;
+    }
+
+    .noConversationTitle {
+        font-size: 18px;
+    }
+
+    .newConversationButtonLarge {
+        min-width: 180px;
+        padding: 10px 20px;
+    }
+
+    .recentConversations {
+        max-width: 100%;
+    }
+
+    .recentConversationItem {
+        padding: 10px 12px;
+    }
+
+    .recentConversationsTitle {
+        font-size: 14px;
+    }
+}
+
+
+.noConversationState {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    padding: 40px 20px;
+    background: var(--background-primary);
+    overflow-y: auto;
+}
+
+.noConversationContent {
+    text-align: center;
+    max-width: 500px;
+    width: 100%;
+}
+
+.noConversationIcon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.7;
+}
+
+.noConversationTitle {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-normal);
+    margin: 0 0 12px 0;
+}
+
+.noConversationText {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0 0 24px 0;
+}
+
+.noConversationActions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+
+.newConversationButtonLarge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-width: 200px;
+}
+
+.newConversationButtonLarge:hover {
+    background: var(--interactive-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.newConversationButtonLarge:active {
+    transform: translateY(0);
+}
+
+/* Conversations récentes */
+.recentConversations {
+    width: 100%;
+    max-width: 400px;
+}
+
+.recentConversationsTitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-normal);
+    margin: 0 0 16px 0;
+    text-align: center;
+}
+
+.recentConversationsList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.recentConversationItem {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px 16px;
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+    width: 100%;
+}
+
+.recentConversationItem:hover {
+    background: var(--background-modifier-hover);
+    border-color: var(--interactive-accent);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.recentConversationTitle {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-normal);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.recentConversationMeta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.recentMessageCount {
+    background: var(--background-modifier-border);
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 10px;
+}
+
+.recentDate {
+    font-variant-numeric: tabular-nums;
+}
+
+.moreConversationsHint {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin: 12px 0 0 0;
+    text-align: center;
+}
+
+.noConversationHint {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin: 0;
+    text-align: center;
+    line-height: 1.4;
+}
+
+/* Animation d'apparition */
+.noConversationState {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animation pour les conversations récentes */
+.recentConversationsList {
+    animation: slideIn 0.4s ease-out 0.1s both;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .noConversationState {
+        padding: 20px 16px;
+    }
+
+    .noConversationContent {
+        max-width: 350px;
+    }
+
+    .noConversationIcon {
+        font-size: 40px;
+        margin-bottom: 12px;
+    }
+
+    .noConversationTitle {
+        font-size: 18px;
+    }
+
+    .newConversationButtonLarge {
+        min-width: 180px;
+        padding: 10px 20px;
+    }
+
+    .recentConversations {
+        max-width: 100%;
+    }
+
+    .recentConversationItem {
+        padding: 10px 12px;
+    }
+
+    .recentConversationsTitle {
+        font-size: 14px;
+    }
+}

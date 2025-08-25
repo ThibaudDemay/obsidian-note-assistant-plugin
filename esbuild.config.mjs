@@ -1,3 +1,14 @@
+/*
+ * File Name         : esbuild.config.mjs
+ * Description       : Esbuild configuration file
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 20/08/2025 21:59:38
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 21:24:32
+ */
+
+
 import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";

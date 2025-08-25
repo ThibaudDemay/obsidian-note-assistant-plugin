@@ -1,30 +1,21 @@
+/*
+ * File Name         : useEmbeddings.ts
+ * Description       : Embeddings hook to manage embeddings state and actions
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 25/08/2025 18:11:15
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 21:32:34
+ */
+
 // src/react/hooks/useEmbeddings.ts
 import { EventRef } from 'obsidian';
 import { useCallback, useEffect, useState,  } from 'react';
 
-import {
-    EmbeddingEventData,
-    EmbeddingEventManager,
-    EmbeddingProgress,
-    EmbeddingStats
-} from '@/events/embedding-events';
+import { EmbeddingEventData } from '@/@types/events/EmbeddingEvents';
+import { EmbeddingActions, EmbeddingState } from '@/@types/react/hooks/embedding';
+import { EmbeddingEventManager } from '@/events/EmbeddingEventManager';
 import { usePlugin } from '@/react/contexts';
-
-
-export interface EmbeddingState {
-    progress: EmbeddingProgress;
-    stats: EmbeddingStats | null;
-    isInitialized: boolean;
-    isLoading: boolean;
-    lastUpdated: number;
-    error: Error | null;
-}
-
-export interface EmbeddingActions {
-    refreshStats: () => void;
-    regenerateAll: () => Promise<void>;
-    clearError: () => void;
-}
 
 export const useEmbeddings = (): [EmbeddingState, EmbeddingActions] => {
     const plugin = usePlugin();

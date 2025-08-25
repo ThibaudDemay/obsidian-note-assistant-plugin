@@ -1,28 +1,43 @@
-// main.ts
+/*
+ * File Name         : main.ts
+ * Description       : Main entry point for the Note Assistant plugin
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 25/08/2025 18:11:15
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 21:22:29
+ */
+
 import { Notice, Plugin, WorkspaceLeaf } from 'obsidian';
 
 import {NoteAssistantPluginSettings} from '@/@types/settings';
-import {OllamaChatView, VIEW_TYPE_OLLAMA_CHAT} from '@/chat-view';
-import {EmbeddingService} from '@/embedding-service';
-import {OllamaService} from '@/ollama-service';
-import {OllamaRegistryScraper} from '@/scraper/ollama-registry';
-import {DEFAULT_SETTINGS, NoteAssistantSettingTab} from '@/setting-tab';
+import {EmbeddingService} from '@/services/EmbeddingService';
+import {OllamaRegistryScraperService} from '@/services/OllamaRegistryScraperService';
+import {OllamaService} from '@/services/OllamaService';
+import {DEFAULT_SETTINGS, NoteAssistantSettingTab} from '@/views/NoteAssistantSettingTab';
+import {OllamaChatView, VIEW_TYPE_OLLAMA_CHAT} from '@/views/OllamaChatView';
+
+import { StorageService } from './services/StorageService';
 
 export default class NoteAssistantPlugin extends Plugin {
     settings: NoteAssistantPluginSettings;
+    storageService: StorageService;
     embeddingService: EmbeddingService;
     ollamaService: OllamaService;
-    ollamaScraper: OllamaRegistryScraper;
+    ollamaScraperService: OllamaRegistryScraperService;
 
     async onload() {
         await this.loadSettings();
 
         // Initialiser d'abord le service Ollama
+        this.storageService = new StorageService(this);
         this.ollamaService = new OllamaService(this.settings);
-        this.ollamaScraper = new OllamaRegistryScraper();
+        this.ollamaScraperService = new OllamaRegistryScraperService();
 
         // Puis le service d'embeddings qui dépend d'Ollama
         this.embeddingService = new EmbeddingService(this);
+
+        await this.storageService.initialize();
 
         this.registerView(
             VIEW_TYPE_OLLAMA_CHAT,
@@ -63,6 +78,17 @@ export default class NoteAssistantPlugin extends Plugin {
             id: 'test-ollama-connection',
             name: 'Test Ollama connection',
             callback: () => this.testOllamaConnection()
+        });
+
+        this.addCommand({
+            id: 'clear-plugin-data',
+            name: 'Clear All Plugin Data',
+            callback: async () => {
+                await this.storageService.clearAllData();
+                // Réinitialiser les services après nettoyage
+                this.embeddingService.cleanup();
+                await this.embeddingService.initialize();
+            }
         });
 
         // Onglet des paramètres
@@ -213,6 +239,10 @@ export default class NoteAssistantPlugin extends Plugin {
             this.ollamaService.updateSettings(this.settings);
         }
         await this.embeddingService.checkUpdateModel(this.settings.embeddingModel);
+    }
+
+    async getStorageStats() {
+        return await this.storageService.getStorageStats();
     }
 
 }

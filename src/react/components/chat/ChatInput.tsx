@@ -1,78 +1,98 @@
+/*
+ * File Name         : ChatInput.tsx
+ * Description       : Chat input component with multiline, auto-resize and send button
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 25/08/2025 18:11:15
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 19:19:10
+ */
+
 import React, { useEffect } from 'react';
+
+import { ObsidianIcon } from '@/react/components/shared';
 
 import styles from './ChatInput.module.css';
 
-export const ChatInput: React.FC<{
+interface ChatInputProps {
     inputValue: string;
     isLoading: boolean;
     onInputChange: (value: string) => void;
     onSendMessage: () => void;
     inputRef: React.RefObject<HTMLTextAreaElement | null>;
-}> = ({ inputValue, isLoading, onInputChange, onSendMessage, inputRef }) => {
+    placeholder?: string;
+    disabled?: boolean;
+}
 
-    // Fonction pour ajuster automatiquement la hauteur du textarea
-    const adjustTextareaHeight = () => {
-        if (inputRef.current) {
-            // Reset la hauteur pour calculer la nouvelle hauteur nécessaire
-            inputRef.current.style.height = 'auto';
-
-            // Calcule la hauteur nécessaire en fonction du contenu
-            const scrollHeight = inputRef.current.scrollHeight;
-            const maxHeight = 120; // Hauteur maximale en pixels (environ 5 lignes)
-
-            // Applique la nouvelle hauteur (limitée par maxHeight)
-            inputRef.current.style.height = Math.min(scrollHeight, maxHeight) + 'px';
-
-            // Active le scroll vertical si le contenu dépasse maxHeight
-            inputRef.current.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden';
-        }
-    };
-
-    // Ajuste la hauteur quand la valeur change
+export const ChatInput: React.FC<ChatInputProps> = ({
+    inputValue,
+    isLoading,
+    onInputChange,
+    onSendMessage,
+    inputRef,
+    placeholder = 'Tapez votre message...',
+    disabled = false
+}) => {
+    // Auto-resize textarea
     useEffect(() => {
-        adjustTextareaHeight();
+        if (inputRef.current) {
+            inputRef.current.style.height = 'auto';
+            inputRef.current.style.height = `${inputRef.current.scrollHeight}px`;
+        }
     }, [inputValue]);
 
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
-            if (e.shiftKey) {
-                // Shift+Enter : permet le saut de ligne (comportement par défaut)
-                return;
-            } else {
-                // Enter seul : envoie le message
-                e.preventDefault();
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (!disabled && !isLoading && inputValue.trim()) {
                 onSendMessage();
             }
         }
     };
 
-    const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        onInputChange(e.target.value);
+    const handleSendClick = () => {
+        if (!disabled && !isLoading && inputValue.trim()) {
+            onSendMessage();
+        }
     };
+
+    const canSend = !disabled && !isLoading && inputValue.trim().length > 0;
 
     return (
         <div className={styles.chatInputContainer}>
-            <textarea
-                ref={inputRef}
-                placeholder="Tapez votre message..."
-                className={styles.chatInput}
-                value={inputValue}
-                onChange={handleInput}
-                onKeyPress={handleKeyPress}
-                disabled={isLoading}
-                rows={1}
-                style={{
-                    resize: 'none',
-                    minHeight: '40px',
-                }}
-            />
-            <button
-                className={styles.chatSendButton}
-                onClick={onSendMessage}
-                disabled={isLoading || !inputValue.trim()}
-            >
-                {isLoading ? 'Envoi...' : 'Envoyer'}
-            </button>
+            <div className={styles.inputWrapper}>
+                <textarea
+                    ref={inputRef}
+                    className={`${styles.chatInput} ${disabled ? styles.disabled : ''}`}
+                    value={inputValue}
+                    onChange={(e) => onInputChange(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={placeholder}
+                    disabled={disabled || isLoading}
+                    rows={1}
+                />
+                <button
+                    className={`${styles.sendButton} ${canSend ? styles.sendButtonActive : styles.sendButtonDisabled}`}
+                    onClick={handleSendClick}
+                    disabled={!canSend}
+                    title={disabled ? 'Créez une conversation pour envoyer un message' : 'Envoyer le message (Entrée)'}
+                >
+                    {isLoading ? (
+                        <div className={styles.loadingSpinner}>
+                            <ObsidianIcon iconName="loader-2" />
+                        </div>
+                    ) : (
+                        <ObsidianIcon iconName="send" />
+                    )}
+                </button>
+            </div>
+
+            {disabled && (
+                <div className={styles.disabledHint}>
+                    <ObsidianIcon iconName="info" />
+                    <span>Créez ou sélectionnez une conversation pour commencer à discuter</span>
+                </div>
+            )}
         </div>
     );
 };

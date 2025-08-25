@@ -1,4 +1,15 @@
-import React from 'react';
+/*
+ * File Name         : ChatMessage.tsx
+ * Description       : Chat message component displaying user and assistant messages with markdown support.
+ *                     Adding some context like consulted notes (Percentage of similarity, link to note, preview)
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 25/08/2025 18:11:15
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 19:20:50
+ */
+
+import React, { useState } from 'react';
 import MarkdownView from 'react-showdown';
 
 import { SimilarNote } from '@/@types';
@@ -8,10 +19,22 @@ import { usePlugin } from '@/react/contexts';
 
 import styles from './ChatMessage.module.css';
 
-const roleClasses = {
-    user: styles.userMessage,
-    assistant: styles.assistantMessage,
-    system: styles.systemMessage
+const roleConfig = {
+    user: {
+        className: styles.userMessage,
+        icon: 'user',
+        label: 'Vous'
+    },
+    assistant: {
+        className: styles.assistantMessage,
+        icon: 'bot',
+        label: 'Assistant'
+    },
+    system: {
+        className: styles.systemMessage,
+        icon: 'settings',
+        label: 'Système'
+    }
 };
 
 export const ChatMessage: React.FC<{
@@ -20,6 +43,7 @@ export const ChatMessage: React.FC<{
     showNotesUsed: boolean;
 }> = ({ message, showTimestamps, showNotesUsed }) => {
     const plugin = usePlugin();
+    const [isNotesExpanded, setIsNotesExpanded] = useState(false);
 
     const handleNoteClick = (note: SimilarNote, e: React.MouseEvent) => {
         e.preventDefault();
@@ -28,39 +52,72 @@ export const ChatMessage: React.FC<{
         }
     };
 
+    const config = roleConfig[message.role] || roleConfig.assistant;
+    const hasNotes = message.consultedNotes && message.consultedNotes.length > 0;
+
     return (
-        <div className={`${styles.chatMessage} ${roleClasses[message.role] || ''}`}>
+        <div className={`${styles.chatMessage} ${config.className}`}>
             <div className={styles.chatAvatar}>
-                {
-                    {'user': <ObsidianIcon iconName='user' /> ,
-                        'assistant': <ObsidianIcon iconName='bot' />,
-                        'system': <ObsidianIcon iconName='laptop' />}[message.role]
-                }
+                <ObsidianIcon iconName={config.icon} />
             </div>
             <div className={styles.chatMessageContent}>
+                <div className={styles.chatMessageHeader}>
+                    <span className={styles.chatRoleLabel}>{config.label}</span>
+                    {showTimestamps && (
+                        <span className={styles.chatTimestamp}>
+                            {message.timestamp.toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            })}
+                        </span>
+                    )}
+                </div>
+
                 <div className={styles.chatContent}>
                     <MarkdownView markdown={message.content} />
                 </div>
-                {/* Contexte des notes pour les messages de l'assistant */}
-                {showNotesUsed && message.role === 'assistant' && message.consultedNotes && message.consultedNotes.length > 0 && (
-                    <div className={styles.chatMessageContext}>
-                        <span className={styles.chatContextIcon}><ObsidianIcon iconName='library-big' /></span>
-                        <span className={styles.chatContextText}>Notes consultées : </span>
-                        {message.consultedNotes.map((note, noteIndex) => (
-                            <span
-                                key={noteIndex}
-                                className={styles.chatContextNote}
-                                onClick={(e) => handleNoteClick(note, e)}
-                                title={`Ouvrir ${note.key}`}
-                            >
-                                {note.key} [{Math.round(note.similarity*10000)/100}%]
+
+                {/* Notes consultées - version simplifiée */}
+                {showNotesUsed && hasNotes && (
+                    <div className={styles.consultedNotesSection}>
+                        <button
+                            className={styles.notesToggleButton}
+                            onClick={() => setIsNotesExpanded(!isNotesExpanded)}
+                        >
+                            <ObsidianIcon iconName="file-text" />
+                            <span className={styles.notesToggleText}>
+                                {message.consultedNotes!.length} note{message.consultedNotes!.length > 1 ? 's' : ''}
                             </span>
-                        ))}
-                    </div>
-                )}
-                {showTimestamps && (
-                    <div className={styles.chatTime}>
-                        {message.timestamp.toLocaleTimeString()}
+                            <ObsidianIcon
+                                iconName={isNotesExpanded ? 'chevron-up' : 'chevron-down'}
+                            />
+                        </button>
+
+                        {isNotesExpanded && (
+                            <div className={styles.notesList}>
+                                {message.consultedNotes!.map((note, index) => (
+                                    <div key={index} className={styles.noteItem}>
+                                        <div className={styles.noteMetadata}>
+                                            <button
+                                                className={styles.noteLink}
+                                                onClick={(e) => handleNoteClick(note, e)}
+                                                title={`Ouvrir ${note.key}`}
+                                            >
+                                                <ObsidianIcon iconName="external-link" />
+                                                <span className={styles.noteName}>{note.key}</span>
+                                            </button>
+                                            <span className={styles.noteSimilarity}>
+                                                {Math.round(note.similarity * 100)}%
+                                            </span>
+                                        </div>
+                                        <div className={styles.notePreview}>
+                                            {note.content.substring(0, 120)}
+                                            {note.content.length > 120 && '...'}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

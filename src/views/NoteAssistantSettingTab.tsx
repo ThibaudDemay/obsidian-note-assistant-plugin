@@ -1,3 +1,13 @@
+/*
+ * File Name         : NoteAssistantSettingTab.tsx
+ * Description       : Settings tab view for the Note Assistant plugin
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 25/08/2025 18:11:15
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 21:22:11
+ */
+
 import { App, PluginSettingTab } from 'obsidian';
 import { createRoot, Root } from 'react-dom/client';
 

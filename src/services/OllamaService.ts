@@ -1,29 +1,17 @@
+/*
+ * File Name         : OllamaService.ts
+ * Description       : Ollama service to interact with Ollama server API
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 25/08/2025 18:11:15
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 21:16:45
+ */
+
 import { Platform, requestUrl, RequestUrlParam } from 'obsidian';
 
+import { OllamaModelResponse, ProgressResponse } from '@/@types/services/OllamaService';
 import { NoteAssistantPluginSettings } from '@/@types/settings';
-
-export interface ProgressResponse {
-    status: string;
-    digest?: string;
-    total?: number;
-    completed?: number;
-}
-
-export interface OllamaModelResponse {
-    name: string;
-    model: string;
-    modified_at: string;
-    size: number;
-    digest: string;
-    details: {
-        parent_model: string;
-        format: string;
-        family: string;
-        families: string[];
-        parameter_size: string;
-        quantization_level: string;
-    };
-}
 
 // Types pour les réponses API Ollama
 interface OllamaChatResponse {

@@ -1,4 +1,12 @@
-/* OllamaPullModal.module.css */
+/*
+ * File Name         : OllamaPullModal.module.css
+ * Description       : Styles for the Ollama model pull modal component
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 20/08/2025 21:59:38
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 20:16:48
+ */
 
 .overlay {
   position: fixed;
@@ -217,6 +225,7 @@
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
@@ -379,6 +388,7 @@
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 

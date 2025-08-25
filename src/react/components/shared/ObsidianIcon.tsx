@@ -1,3 +1,13 @@
+/*
+ * File Name         : ObsidianIcon.tsx
+ * Description       : Obsidian styled icon component
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 20/08/2025 21:59:38
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 20:59:53
+ */
+
 import { setIcon } from 'obsidian';
 import React from 'react';
 import { useEffect, useRef } from 'react';

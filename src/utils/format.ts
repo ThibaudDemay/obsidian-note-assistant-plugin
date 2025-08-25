@@ -1,3 +1,13 @@
+/*
+ * File Name         : format.ts
+ * Description       : Utility functions for formatting numbers and text
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 21/08/2025 22:11:17
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 21:20:31
+ */
+
 export function formatNumeric(value: number, suffix: string = '', type: 'si'|'us' = 'si'): string {
     if (!value || value === 0)
         return suffix !== '' ? `0 ${suffix}`: '0';

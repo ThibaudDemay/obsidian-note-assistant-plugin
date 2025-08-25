@@ -1,4 +1,12 @@
-/* SettingItem.module.css */
+/*
+ * File Name         : SettingItem.module.css
+ * Description       : Styles for individual setting items in the settings view
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 21/08/2025 22:09:36
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 20:16:00
+ */
 
 .settingItem {
   display: flex;

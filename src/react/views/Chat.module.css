@@ -1,3 +1,13 @@
+/*
+ * File Name         : Chat.module.css
+ * Description       : Styles for the main chat view container and no conversation state
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 25/08/2025 18:11:15
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 21:08:54
+ */
+
 .chatViewContainer {
     display: flex;
     flex-direction: column;

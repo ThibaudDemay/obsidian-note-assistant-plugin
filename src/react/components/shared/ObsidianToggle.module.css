@@ -1,4 +1,12 @@
-/* ObsidianToggle.module.css - Styles CSS Modules pour le composant toggle React */
+/*
+ * File Name         : ObsidianToggle.module.css
+ * Description       : Styles for the Obsidian styled toggle component
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 20/08/2025 22:59:00
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 21:00:13
+ */
 
 /* === WRAPPER === */
 .wrapper {

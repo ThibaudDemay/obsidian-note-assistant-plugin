@@ -1,3 +1,13 @@
+/*
+ * File Name         : GlobalStatus.tsx
+ * Description       : Global status component for settings view showing status of Ollama and models
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 21/08/2025 22:09:36
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 21:16:00
+ */
+
 import React, {
     MouseEvent,
     useEffect,
@@ -5,13 +15,13 @@ import React, {
 } from 'react';
 
 import { ServiceStatus, StatusProps } from '@/@types/react/components/settings';
+import { SettingTabChildProps } from '@/@types/react/views/SettingTab';
 import { EmbeddingStatus } from '@/react/components/settings';
 import { ObsidianIcon } from '@/react/components/shared';
 import { usePlugin } from '@/react/contexts';
-import { SettingTabChildProps } from '@/react/views/SettingTab';
+import { useEmbeddings } from '@/react/hooks';
 
 import styles from './GlobalStatus.module.css';
-import { useEmbeddings } from '@/react/hooks';
 
 const StatusLine: React.FC<StatusProps> = ({status}) => {
     return  (

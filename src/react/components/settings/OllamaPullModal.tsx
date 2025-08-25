@@ -1,3 +1,14 @@
+/*
+ * File Name         : OllamaPullModal.tsx
+ * Description       : Ollama model pull modal component to search and download models from Ollama
+ *                     registry
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 25/08/2025 18:11:15
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 20:15:46
+ */
+
 import React, {
     useEffect,
     useMemo,
@@ -75,8 +86,8 @@ export const OllamaPullModal: React.FC<OllamaPullModalProps> = ({isOpen,
             const installedNames = installed.map(model => model.name.toLowerCase());
             setInstalledModels(installedNames);
 
-            await plugin.ollamaScraper.scrape();
-            const allModels = plugin.ollamaScraper.modelsList;
+            await plugin.ollamaScraperService.scrape();
+            const allModels = plugin.ollamaScraperService.modelsList;
             setAvailableModels(allModels);
 
             const filteredModels = allModels

@@ -1,5 +1,14 @@
-import React from 'react';
+/*
+ * File Name         : SettingItem.ts
+ * Description       : Types for settings items component
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 21/08/2025 22:09:36
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 19:05:10
+ */
 
+import React from 'react';
 
 export interface DropdownItem {
     value: string,

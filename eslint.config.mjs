@@ -1,3 +1,13 @@
+/*
+ * File Name         : eslint.config.mjs
+ * Description       : eslint configuration file
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 21/08/2025 22:09:36
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 21:24:43
+ */
+
 import js from '@eslint/js';
 import typescript from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
@@ -6,6 +16,8 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import perfectionist from 'eslint-plugin-perfectionist';
 import stylistic from '@stylistic/eslint-plugin';
 import globals from 'globals';
+
+import typesLocationRule from "./eslint-rules/types-location.js";
 
 export default [
   js.configs.recommended,
@@ -34,6 +46,11 @@ export default [
       perfectionist,
       'react': react,
       'react-hooks': reactHooks,
+      'custom': {
+        rules: {
+          'types-location': typesLocationRule
+        }
+      }
     },
     rules: {
       // TypeScript rules
@@ -87,6 +104,8 @@ export default [
         "ExportDeclaration": { "multiline": true, "minProperties": 4, "consistent": true }
       }],
       // '@stylistic/object-property-newline': ['warn', {"allowAllPropertiesOnSameLine": false}]
+
+      'custom/types-location': 'error'
     },
     settings: {
       react: {

@@ -1,9 +1,19 @@
+/*
+ * File Name         : EmbeddingSettings.tsx
+ * Description       : Embedding settings component with accordion
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 21/08/2025 22:11:17
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 21:15:29
+ */
+
 import { debounce } from 'obsidian';
 import React from 'react';
 
+import { SettingTabChildProps } from '@/@types/react/views/SettingTab';
 import { Accordion, SettingItem } from '@/react/components/settings';
 import { useSettingItem } from '@/react/hooks';
-import { SettingTabChildProps } from '@/react/views/SettingTab';
 
 export const EmbeddingSettings: React.FC<SettingTabChildProps> =({
     settings,

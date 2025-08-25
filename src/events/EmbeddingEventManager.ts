@@ -1,27 +1,16 @@
-// src/events/embedding-events.ts
+/*
+ * File Name         : EmbeddingEvents.ts
+ * Description       : Event Manager for embedding-related events
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 25/08/2025 18:11:15
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 19:15:31
+ */
+
 import { EventRef, Events } from 'obsidian';
 
-export interface EmbeddingProgress {
-    total: number;
-    processed: number;
-    errors: number;
-    isRunning: boolean;
-}
-
-export interface EmbeddingStats {
-    totalEmbeddings: number;
-    totalFiles: number;
-    averageSectionsPerFile: number;
-    embeddingDimensions: number;
-    diskUsageEstimate: string;
-    cacheHitRate: number;
-}
-
-export interface EmbeddingEventData {
-    progress: EmbeddingProgress;
-    stats: EmbeddingStats;
-    timestamp: number;
-}
+import { EmbeddingEventData } from '@/@types/events/EmbeddingEvents';
 
 // Types d'événements embedding
 export const EMBEDDING_EVENTS = {

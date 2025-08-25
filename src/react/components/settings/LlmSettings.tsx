@@ -1,9 +1,19 @@
+/*
+ * File Name         : LlmSettings.tsx
+ * Description       : LLM settings component with accordion
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 21/08/2025 22:09:36
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 21:16:09
+ */
+
 import { debounce } from 'obsidian';
 import React from 'react';
 
+import { SettingTabChildProps } from '@/@types/react/views/SettingTab';
 import { Accordion, SettingItem } from '@/react/components/settings';
 import { useSettingItem } from '@/react/hooks';
-import { SettingTabChildProps } from '@/react/views/SettingTab';
 
 export const LlmSettings: React.FC<SettingTabChildProps> = ({
     settings,

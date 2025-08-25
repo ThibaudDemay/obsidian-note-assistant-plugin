@@ -1,4 +1,14 @@
-// src/react/components/settings/EmbeddingStatus.tsx
+/*
+ * File Name         : EmbeddingStatus.tsx
+ * Description       : Embedding status component for global status in settings view with embedding
+ *                     statistics like number of files embedded, number of embeddings, size on disk
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 25/08/2025 20:13:06
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 20:13:21
+ */
+
 import React from 'react';
 
 import { ObsidianIcon } from '@/react/components/shared/ObsidianIcon';

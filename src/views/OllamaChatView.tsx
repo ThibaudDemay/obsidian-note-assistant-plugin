@@ -1,4 +1,13 @@
-// chat-view.ts
+/*
+ * File Name         : OllamaChatView.tsx
+ * Description       : Ollama chat view component
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 25/08/2025 18:11:15
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 21:21:53
+ */
+
 import {ItemView, WorkspaceLeaf} from 'obsidian';
 import {createRoot, Root} from 'react-dom/client';
 

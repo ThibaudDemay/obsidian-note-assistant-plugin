@@ -1,0 +1,274 @@
+/*
+ * File Name         : ConversationManager.module.css
+ * Description       : Styles for the conversation manager component
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 25/08/2025 18:11:14
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 19:22:12
+ */
+
+.conversationManager {
+    position: relative;
+    max-width: 250px; /* Limiter la largeur pour éviter de prendre toute la place */
+    min-width: 180px;
+}
+
+.conversationButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--interactive-normal);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 6px;
+    color: var(--text-normal);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 13px;
+    width: 100%;
+    text-align: left;
+}
+
+.conversationButton:hover {
+    background: var(--interactive-hover);
+}
+
+.conversationTitle {
+    flex: 1;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0; /* Important pour permettre l'ellipsis */
+}
+
+.conversationDropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 6px;
+    box-shadow: var(--shadow-s);
+    max-height: 400px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-width: 300px; /* Assurer une largeur minimale pour le contenu */
+}
+
+.conversationActions {
+    padding: 12px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    flex-shrink: 0;
+}
+
+.newConversationButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    width: 100%;
+    transition: background 0.15s ease;
+}
+
+.newConversationButton:hover {
+    background: var(--interactive-accent-hover);
+}
+
+.conversationList {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 8px 0;
+    flex: 1;
+}
+
+.conversationItem {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-left: 3px solid transparent;
+    transition: all 0.15s ease;
+    gap: 8px; /* Espacement entre info et actions */
+}
+
+.conversationItem:hover {
+    background: var(--background-modifier-hover);
+}
+
+.conversationItem:hover .conversationItemActions {
+    opacity: 1;
+}
+
+.conversationItem.active {
+    background: var(--background-modifier-active-hover);
+    border-left-color: var(--interactive-accent);
+}
+
+.conversationInfo {
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+}
+
+.conversationName {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-normal);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
+}
+
+.conversationMeta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.messageCount {
+    background: var(--background-modifier-border);
+    padding: 2px 6px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+.conversationDate {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.conversationItemActions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    flex-shrink: 0; /* Empêcher le rétrécissement */
+}
+
+.conversationItem:hover .conversationItemActions {
+    opacity: 1;
+}
+
+.actionButton, .deleteButton {
+    padding: 6px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 3px;
+    color: var(--text-muted);
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+}
+
+.actionButton:hover {
+    background: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
+
+.deleteButton:hover {
+    background: var(--background-modifier-error-hover);
+    color: var(--text-error);
+}
+
+.editMode {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.editInput {
+    flex: 1;
+    padding: 6px 8px;
+    border: 1px solid var(--interactive-accent);
+    border-radius: 4px;
+    background: var(--background-primary);
+    color: var(--text-normal);
+    font-size: 13px;
+    min-width: 0;
+}
+
+.editInput:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+.editActions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.saveButton, .cancelButton {
+    padding: 6px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+}
+
+.saveButton {
+    color: var(--text-success);
+}
+
+.saveButton:hover {
+    background: var(--background-modifier-success);
+}
+
+.cancelButton {
+    color: var(--text-muted);
+}
+
+.cancelButton:hover {
+    background: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
+
+.emptyState {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-style: italic;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .conversationManager {
+        max-width: 200px;
+        min-width: 150px;
+    }
+
+    .conversationDropdown {
+        min-width: 280px;
+    }
+
+    .conversationTitle {
+        max-width: 120px;
+    }
+}

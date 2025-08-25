@@ -1,3 +1,13 @@
+/*
+ * File Name         : parse.ts
+ * Description       : Utility functions for parsing and formatting numbers and text
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 21/08/2025 22:09:36
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 21:21:05
+ */
+
 export function parseMetricString(text: string): number {
     text = text.toString().trim().toUpperCase();
 

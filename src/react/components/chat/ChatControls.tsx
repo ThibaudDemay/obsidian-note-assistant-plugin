@@ -1,3 +1,15 @@
+/*
+ * File Name         : ChatControls.tsx
+ * Description       : Chat controls component for model selection, stream toggle, and context
+ *                     refresh.
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 21/08/2025 22:09:36
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 19:17:09
+ */
+
+
 import React from 'react';
 
 import { DropdownItem } from '@/@types/react/components/settings';

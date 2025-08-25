@@ -1,4 +1,13 @@
-// src/react/hooks/useSettings.ts
+/*
+ * File Name         : useSettings.ts
+ * Description       : Hook to manage global settings state and updates
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 21/08/2025 22:10:29
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 21:07:40
+ */
+
 import { useEffect, useState } from 'react';
 
 import { NoteAssistantPluginSettings } from '@/@types';

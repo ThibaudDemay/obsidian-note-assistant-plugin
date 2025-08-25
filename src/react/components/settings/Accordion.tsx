@@ -1,4 +1,13 @@
-// Accordion.tsx
+/*
+ * File Name         : Accordion.tsx
+ * Description       : Accordion component for settings sections
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 21/08/2025 22:09:36
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 19:52:44
+ */
+
 import React, { ReactNode, useState } from 'react';
 
 import { ObsidianIcon } from '@/react/components/shared';

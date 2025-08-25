@@ -1,16 +1,22 @@
+/*
+ * File Name         : EmbeddingService.ts
+ * Description       : Embedding service to manage note embeddings using Ollama
+ * Author            : Thibaud Demay (thibaud@demay.dev)
+ * Created At        : 25/08/2025 18:11:15
+ * ----
+ * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
+ * Last Modified At  : 25/08/2025 21:12:45
+ */
+
 // embedding-service.ts - Version Ollama
 import { createHash } from 'crypto';
 import { debounce, Notice, TFile } from 'obsidian';
 
-import { EmbeddingData, ParsedNote, SimilarNote } from '@/@types/embedding';
-import { EmbeddingEventManager } from '@/events/embedding-events';
+import { EmbeddingDataWithHash, ParsedNote, SimilarNote } from '@/@types/services/EmbeddingService';
+import { EmbeddingEventManager } from '@/events/EmbeddingEventManager';
 import NoteAssistantPlugin from '@/main';
+import { StorageService } from '@/services/StorageService';
 import { formatNumeric } from '@/utils/format';
-
-export interface EmbeddingDataWithHash extends EmbeddingData {
-    contentHash: string; // Hash du contenu pour détecter les changements
-    sectionName?: string; // Nom de la section si applicable
-}
 
 interface EmbeddingProgress {
     total: number;
@@ -19,10 +25,10 @@ interface EmbeddingProgress {
     isRunning: boolean;
 }
 
-
 export class EmbeddingService {
     private plugin: NoteAssistantPlugin;
     private eventManager: EmbeddingEventManager;
+    private storageService: StorageService;
     private embeddings: Map<string, EmbeddingDataWithHash> = new Map();
     private isInitialized = false;
     private isInitializing = false;
@@ -38,10 +44,15 @@ export class EmbeddingService {
     private debouncedGenerateForFile: (file: TFile) => void;
     private hashCache = new Map<string, string>();
 
+    private debouncedSave = debounce(() => {
+        this.saveEmbeddingsToCache();
+    }, 5000);
+
     constructor(plugin: NoteAssistantPlugin) {
         this.plugin = plugin;
         this.embeddingModel = plugin.settings.llmModel;
         this.eventManager = EmbeddingEventManager.getInstance();
+        this.storageService = plugin.storageService;
 
         this.debouncedGenerateForFile = debounce(
             (file: TFile) => this.generateEmbeddingForFile(file),
@@ -70,6 +81,8 @@ export class EmbeddingService {
                 throw new Error('Cannot connect to Ollama server');
             }
 
+            const cacheLoaded = await this.loadEmbeddingsFromCache();
+
             this.isInitialized = true;
             console.log('✅ EmbeddingService initialized successfully');
 
@@ -80,8 +93,17 @@ export class EmbeddingService {
             });
             this.emitCurrentState();
 
-            // Démarrer la génération automatique
-            await this.generateEmbeddingsForAllNotes();
+            if (cacheLoaded) {
+                console.log('📂 Using cached embeddings');
+                this.emitCurrentState();
+
+                // Vérifier les mises à jour en arrière-plan
+                // this.checkForUpdatesInBackground(); // commented out because obsidian events should handle it
+            } else {
+                console.log('🔄 No cache found, generating embeddings...');
+                // Démarrer la génération automatique
+                await this.generateEmbeddingsForAllNotes();
+            }
 
         } catch (error) {
             console.error('❌ Failed to initialize EmbeddingService:', error);
@@ -93,7 +115,33 @@ export class EmbeddingService {
         this.isInitializing = false;
     }
 
+    // private async checkForUpdatesInBackground(): Promise<void> {
+    //     // Vérifier en arrière-plan si des fichiers ont été modifiés
+    //     setTimeout(async () => {
+    //         try {
+    //             const files = this.plugin.app.vault.getMarkdownFiles()
+    //                 .filter(f => !this.shouldIgnoreFile(f));
+
+    //             let updatesNeeded = 0;
+    //             for (const file of files) {
+    //                 if (await this.fileHasChanges(file)) {
+    //                     updatesNeeded++;
+    //                 }
+    //             }
+
+    //             if (updatesNeeded > 0) {
+    //                 console.log(`🔄 Found ${updatesNeeded} files needing updates`);
+    //                 await this.syncEmbeddings();
+    //             }
+    //         } catch (error) {
+    //             console.error('❌ Error checking for updates:', error);
+    //         }
+    //     }, 10000);
+    // }
+
     cleanup(): void {
+        this.saveEmbeddingsToCache();
+
         this.embeddings.clear();
         this.hashCache.clear();
         this.isInitialized = false;
@@ -472,7 +520,12 @@ export class EmbeddingService {
             }
         }
 
-        return { updated, added, removed };
+        await this.saveEmbeddingsToCache();
+
+        const result = { updated, added, removed };
+        console.log('🔄 Sync completed:', result);
+
+        return result;
     }
 
     // Recherche avancée avec filtres
@@ -659,6 +712,7 @@ export class EmbeddingService {
                 }
             }
         }
+        this.debouncedSave();
     }
 
     async generateEmbeddingForText(
@@ -748,6 +802,19 @@ export class EmbeddingService {
         await this.generateEmbeddingForFile(file);
     }
 
+    async regenerateAllEmbeddings(): Promise<void> {
+        this.embeddings.clear();
+        this.hashCache.clear();
+
+        await this.storageService.clearEmbeddingsCache();
+
+        // Émettre le changement d'état immédiatement
+        this.emitCurrentState();
+
+        await this.generateEmbeddingsForAllNotes();
+    }
+
+
     /* SIMILARITY */
 
     private cosineSimilarity(a: number[], b: number[]): number {
@@ -799,14 +866,36 @@ export class EmbeddingService {
         }
     }
 
-    async regenerateAllEmbeddings(): Promise<void> {
-        this.embeddings.clear();
-        this.hashCache.clear();
+    /* MÉTHODES DE PERSISTANCE */
 
-        // Émettre le changement d'état immédiatement
-        this.emitCurrentState();
+    private async saveEmbeddingsToCache(): Promise<void> {
+        if (this.embeddings.size === 0) return;
 
-        await this.generateEmbeddingsForAllNotes();
+        try {
+            await this.storageService.saveEmbeddings(this.embeddings);
+        } catch (error) {
+            console.error('❌ Failed to save embeddings to cache:', error);
+        }
+    }
+
+    private async loadEmbeddingsFromCache(): Promise<boolean> {
+        try {
+            const cachedEmbeddings = await this.storageService.loadEmbeddings();
+
+            if (cachedEmbeddings) {
+                this.embeddings = cachedEmbeddings;
+                console.log(`📂 Restored ${this.embeddings.size} embeddings from cache`);
+
+                // Émettre les stats après chargement
+                this.emitCurrentState();
+                return true;
+            }
+
+            return false;
+        } catch (error) {
+            console.error('❌ Failed to load embeddings from cache:', error);
+            return false;
+        }
     }
 
 }
