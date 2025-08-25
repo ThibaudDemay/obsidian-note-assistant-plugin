@@ -5,17 +5,17 @@
  * Created At        : 25/08/2025 18:11:15
  * ----
  * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
- * Last Modified At  : 25/08/2025 21:12:45
+ * Last Modified At  : 25/08/2025 22:36:08
  */
 
 // embedding-service.ts - Version Ollama
-import { createHash } from 'crypto';
 import { debounce, Notice, TFile } from 'obsidian';
 
 import { EmbeddingDataWithHash, ParsedNote, SimilarNote } from '@/@types/services/EmbeddingService';
 import { EmbeddingEventManager } from '@/events/EmbeddingEventManager';
 import NoteAssistantPlugin from '@/main';
 import { StorageService } from '@/services/StorageService';
+import { sha256 } from '@/utils/crypto';
 import { formatNumeric } from '@/utils/format';
 
 interface EmbeddingProgress {
@@ -342,8 +342,8 @@ export class EmbeddingService {
 
     /* UTILS */
 
-    private calculateContentHash(content: string): string {
-        return createHash('md5').update(content.trim()).digest('hex');
+    private async calculateContentHash(content: string): Promise<string> {
+        return await sha256(content.trim());
     }
 
     private cleanContent(content: string): string {
@@ -370,7 +370,7 @@ export class EmbeddingService {
         // Si le fichier n'a pas de sections, vérifier le contenu global
         if (Object.keys(parsedNote.sections).length === 0) {
             const cleanContent = this.cleanContent(parsedNote.content);
-            const currentHash = this.calculateContentHash(cleanContent);
+            const currentHash = await this.calculateContentHash(cleanContent);
             const existingEmbedding = this.embeddings.get(file.path);
 
             return !existingEmbedding ||
@@ -382,7 +382,7 @@ export class EmbeddingService {
         for (const sectionName of Object.keys(parsedNote.sections)) {
             const sectionKey = `${file.path}#${sectionName}`;
             const cleanContent = this.cleanContent(parsedNote.sections[sectionName]);
-            const currentHash = this.calculateContentHash(cleanContent);
+            const currentHash = await this.calculateContentHash(cleanContent);
             const existingEmbedding = this.embeddings.get(sectionKey);
 
             if (!existingEmbedding ||
@@ -725,7 +725,7 @@ export class EmbeddingService {
             throw new Error('Content empty for embedding generation');
         }
 
-        const contentHash = this.calculateContentHash(content);
+        const contentHash = await this.calculateContentHash(content);
         const existing = this.embeddings.get(key);
         if (existing && existing.contentHash === contentHash) {
             return;
