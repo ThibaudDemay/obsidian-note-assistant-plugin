@@ -5,11 +5,10 @@
  * Created At        : 21/08/2025 22:09:36
  * ----
  * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
- * Last Modified At  : 25/08/2025 21:14:49
+ * Last Modified At  : 25/08/2025 22:08:28
  */
 
 import { TFile } from 'obsidian';
-
 export interface ParsedNoteProperties {
     type: string,
     tags: string[],
@@ -42,4 +41,22 @@ export interface SimilarNote {
 export interface EmbeddingDataWithHash extends EmbeddingData {
     contentHash: string; // Hash du contenu pour détecter les changements
     sectionName?: string; // Nom de la section si applicable
+}
+
+export interface StoredEmbeddingData {
+    embedding: number[];
+    content: string;
+    lastModified: number;
+    contentHash: string;
+    sectionName?: string;
+    file: {
+        path: string;
+        name: string;
+        basename: string;
+        stat: {
+            mtime: number;
+            ctime: number;
+            size: number;
+        };
+    };
 }

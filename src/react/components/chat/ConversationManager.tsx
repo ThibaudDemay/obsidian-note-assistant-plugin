@@ -5,7 +5,7 @@
  * Created At        : 25/08/2025 18:11:15
  * ----
  * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
- * Last Modified At  : 25/08/2025 21:23:21
+ * Last Modified At  : 25/08/2025 22:13:01
  */
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -112,17 +112,21 @@ export const ConversationManager: React.FC<ConversationManagerProps> = ({
         }
     };
 
-    const handleSaveRename = (event: React.MouseEvent) => {
-        event.stopPropagation();
-        if (editingId && onRenameConversation && editTitle.trim()) {
+    const handleSaveRename = (e: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLInputElement>) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        if (editTitle.trim() && editingId && onRenameConversation) {
             onRenameConversation(editingId, editTitle.trim());
         }
         setEditingId(null);
         setEditTitle('');
     };
 
-    const handleCancelRename = (event: React.MouseEvent) => {
-        event.stopPropagation();
+    const handleCancelRename = (e: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLInputElement>) => {
+        e.stopPropagation();
+        e.preventDefault();
+
         setEditingId(null);
         setEditTitle('');
     };
@@ -186,8 +190,8 @@ export const ConversationManager: React.FC<ConversationManagerProps> = ({
                                                 className={styles.editInput}
                                                 onKeyDown={(e) => {
                                                     e.stopPropagation();
-                                                    if (e.key === 'Enter') handleSaveRename(e as any);
-                                                    if (e.key === 'Escape') handleCancelRename(e as any);
+                                                    if (e.key === 'Enter') handleSaveRename(e);
+                                                    if (e.key === 'Escape') handleCancelRename(e);
                                                 }}
                                                 autoFocus
                                             />

@@ -5,15 +5,18 @@
  * Created At        : 25/08/2025 18:11:15
  * ----
  * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
- * Last Modified At  : 25/08/2025 21:50:57
+ * Last Modified At  : 25/08/2025 22:14:50
  */
 
 import { TFile } from 'obsidian';
 
-import { EmbeddingDataWithHash, SimilarNote } from '@/@types';
 import { Message, StoredMessage } from '@/@types/react/views/Chat';
-import { ConversationData, EmbeddingsCache, StorageConfig, StoredConversationData } from '@/@types/services/StorageService';
+import { EmbeddingDataWithHash, SimilarNote, StoredEmbeddingData } from '@/@types/services/EmbeddingService';
+import {
+    ConversationData, StorageConfig, StoredConversationData, StoredEmbeddingsCache
+} from '@/@types/services/StorageService';
 import NoteAssistantPlugin from '@/main';
+import { formatNumeric } from '@/utils';
 
 export class StorageService {
     private plugin: NoteAssistantPlugin;
@@ -48,50 +51,25 @@ export class StorageService {
         try {
             const embeddingsPath = `${this.pluginDataDir}/${this.config.embeddingsFile}`;
 
-            // Nettoyer les embeddings pour éviter les références circulaires
-            const cleanedEmbeddings: Record<string, any> = {};
-
-            for (const [key, embeddingData] of embeddings) {
-                cleanedEmbeddings[key] = {
-                    embedding: embeddingData.embedding,
-                    content: embeddingData.content,
-                    lastModified: embeddingData.lastModified,
-                    contentHash: embeddingData.contentHash,
-                    sectionName: embeddingData.sectionName,
-                    // Nettoyer la référence au fichier
-                    file: {
-                        path: embeddingData.file.path,
-                        name: embeddingData.file.name,
-                        basename: embeddingData.file.basename,
-                        stat: {
-                            mtime: embeddingData.file.stat.mtime,
-                            ctime: embeddingData.file.stat.ctime,
-                            size: embeddingData.file.stat.size
-                        }
-                    }
-                };
-            }
-
-            const cacheData: EmbeddingsCache = {
+            // Convertir vers le format de stockage
+            const cacheData: StoredEmbeddingsCache = {
                 version: '1.0',
                 model: this.plugin.settings.embeddingModel,
-                modelDimensions: embeddings.size > 0
-                    ? Array.from(embeddings.values())[0].embedding.length
-                    : 0,
+                modelDimensions: embeddings.size > 0 ? Array.from(embeddings.values())[0].embedding.length : 0,
                 createdAt: Date.now(),
                 updatedAt: Date.now(),
-                embeddings: cleanedEmbeddings
+                embeddings: this.convertToStoredEmbeddings(embeddings)
             };
 
             await this.plugin.app.vault.adapter.write(
                 embeddingsPath,
-                JSON.stringify(cacheData, null)
+                JSON.stringify(cacheData, null, 2)
             );
 
             console.log(`💾 Saved ${embeddings.size} embeddings to cache`);
+
         } catch (error) {
             console.error('❌ Error saving embeddings:', error);
-            throw error;
         }
     }
 
@@ -105,7 +83,7 @@ export class StorageService {
             }
 
             const cachedData = await this.plugin.app.vault.adapter.read(embeddingsPath);
-            const parsed: EmbeddingsCache = JSON.parse(cachedData);
+            const parsed: StoredEmbeddingsCache = JSON.parse(cachedData);
 
             // Vérification de compatibilité
             if (parsed.model !== this.plugin.settings.embeddingModel) {
@@ -118,32 +96,8 @@ export class StorageService {
                 return null;
             }
 
-            // Restaurer les embeddings avec reconstruction des objets TFile
-            const embeddings = new Map<string, EmbeddingDataWithHash>();
-
-            for (const [key, embeddingData] of Object.entries(parsed.embeddings)) {
-                // Reconstituer l'objet avec une référence de fichier minimale
-                const restoredEmbedding: EmbeddingDataWithHash = {
-                    embedding: embeddingData.embedding,
-                    content: embeddingData.content,
-                    lastModified: embeddingData.lastModified,
-                    contentHash: embeddingData.contentHash,
-                    sectionName: embeddingData.sectionName,
-                    // Créer une référence de fichier minimale mais fonctionnelle
-                    file: {
-                        path: embeddingData.file.path,
-                        name: embeddingData.file.name,
-                        basename: embeddingData.file.basename,
-                        stat: {
-                            mtime: embeddingData.file.stat.mtime,
-                            ctime: embeddingData.file.stat.ctime,
-                            size: embeddingData.file.stat.size
-                        }
-                    } as any // Cast pour éviter les erreurs de type avec TFile
-                };
-
-                embeddings.set(key, restoredEmbedding);
-            }
+            // Convertir vers le format runtime
+            const embeddings = this.convertFromStoredEmbeddings(parsed.embeddings);
 
             console.log(`📂 Loaded ${embeddings.size} embeddings from cache`);
             return embeddings;
@@ -160,6 +114,66 @@ export class StorageService {
             await this.plugin.app.vault.adapter.remove(embeddingsPath);
             console.log('🗑️ Embeddings cache cleared');
         }
+    }
+
+    /* ===== UTILITAIRES EMBEDDINGS ===== */
+
+    private convertToStoredEmbeddings(embeddings: Map<string, EmbeddingDataWithHash>): Record<string, StoredEmbeddingData> {
+        const stored: Record<string, StoredEmbeddingData> = {};
+
+        for (const [key, embeddingData] of embeddings) {
+            stored[key] = {
+                embedding: embeddingData.embedding,
+                content: embeddingData.content,
+                lastModified: embeddingData.lastModified,
+                contentHash: embeddingData.contentHash,
+                sectionName: embeddingData.sectionName,
+                file: {
+                    path: embeddingData.file.path,
+                    name: embeddingData.file.name,
+                    basename: embeddingData.file.basename,
+                    stat: {
+                        mtime: embeddingData.file.stat.mtime,
+                        ctime: embeddingData.file.stat.ctime,
+                        size: embeddingData.file.stat.size
+                    }
+                }
+            };
+        }
+
+        return stored;
+    }
+
+    // Convertir les embeddings stockés vers le format runtime
+    private convertFromStoredEmbeddings(storedEmbeddings: Record<string, StoredEmbeddingData>): Map<string, EmbeddingDataWithHash> {
+        const embeddings = new Map<string, EmbeddingDataWithHash>();
+
+        for (const [key, embeddingData] of Object.entries(storedEmbeddings)) {
+            // Essayer de retrouver le vrai fichier TFile depuis le vault
+            const realFile = this.plugin.app.vault.getAbstractFileByPath(embeddingData.file.path);
+
+            const restoredEmbedding: EmbeddingDataWithHash = {
+                embedding: embeddingData.embedding,
+                content: embeddingData.content,
+                lastModified: embeddingData.lastModified,
+                contentHash: embeddingData.contentHash,
+                sectionName: embeddingData.sectionName,
+                // Utiliser le vrai fichier si disponible, sinon créer un mock TFile complet
+                file: (realFile instanceof TFile) ? realFile : {
+                    path: embeddingData.file.path,
+                    name: embeddingData.file.name,
+                    basename: embeddingData.file.basename,
+                    extension: embeddingData.file.path.split('.').pop() || '',
+                    stat: embeddingData.file.stat || { mtime: 0, ctime: 0, size: 0 },
+                    vault: this.plugin.app.vault,
+                    parent: null
+                } as TFile
+            };
+
+            embeddings.set(key, restoredEmbedding);
+        }
+
+        return embeddings;
     }
 
     /* ===== GESTION DES CONVERSATIONS ===== */
@@ -285,7 +299,7 @@ export class StorageService {
         }
     }
 
-    /* ===== UTILITAIRES ===== */
+    /* ===== UTILITAIRES CONVERSATION ===== */
 
     // Convertir les messages runtime vers le format de stockage
     private convertToStoredMessages(messages: Message[]): StoredMessage[] {
@@ -335,6 +349,8 @@ export class StorageService {
         }));
     }
 
+    /* ===== UTILITAIRES ===== */
+
     async getStorageStats(): Promise<{
         embeddingsSize: number;
         conversationsCount: number;
@@ -363,7 +379,7 @@ export class StorageService {
             return {
                 embeddingsSize,
                 conversationsCount: conversations.length,
-                totalSize: this.formatBytes(totalSize)
+                totalSize: formatNumeric(totalSize, 'B')
             };
 
         } catch (error) {
@@ -374,14 +390,6 @@ export class StorageService {
                 totalSize: '0 B'
             };
         }
-    }
-
-    private formatBytes(bytes: number): string {
-        if (bytes === 0) return '0 B';
-        const k = 1024;
-        const sizes = ['B', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
     }
 
     async clearAllData(): Promise<void> {

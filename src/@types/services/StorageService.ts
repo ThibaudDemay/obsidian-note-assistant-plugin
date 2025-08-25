@@ -5,11 +5,11 @@
  * Created At        : 25/08/2025 21:17:24
  * ----
  * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
- * Last Modified At  : 25/08/2025 21:53:04
+ * Last Modified At  : 25/08/2025 22:08:55
  */
 
 import { Message, StoredMessage } from '@/@types/react/views';
-import { EmbeddingDataWithHash } from '@/@types/services/EmbeddingService';
+import { EmbeddingDataWithHash, StoredEmbeddingData } from '@/@types/services/EmbeddingService';
 
 export interface StorageConfig {
     embeddingsFile: string;
@@ -31,6 +31,15 @@ export interface ConversationData {
     messages: Message[];
     createdAt: number;
     updatedAt: number;
+}
+
+export interface StoredEmbeddingsCache {
+    version: string;
+    model: string;
+    modelDimensions: number;
+    createdAt: number;
+    updatedAt: number;
+    embeddings: Record<string, StoredEmbeddingData>;
 }
 
 export interface EmbeddingsCache {
