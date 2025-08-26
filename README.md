@@ -1,5 +1,7 @@
 # 🧠 Note Assistant (Obsidian Plugin)
 
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+
 > Transform your Obsidian vault by adding an AI assistant context-aware through your notes.
 
 ## ✨ Features
@@ -87,3 +89,6 @@ graph LR
 - [Ollama](https://ollama.ai) - Making local AI accessible
 - [Obsidian Plugin API](https://github.com/obsidianmd/obsidian-api) - Comprehensive plugin framework
 
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
