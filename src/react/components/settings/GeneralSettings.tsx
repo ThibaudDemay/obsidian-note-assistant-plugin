@@ -6,7 +6,7 @@
  * Created At        : 21/08/2025 22:09:36
  * ----
  * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
- * Last Modified At  : 25/08/2025 21:15:42
+ * Last Modified At  : 26/08/2025 15:54:05
  */
 
 import { debounce, Notice, Platform } from 'obsidian';
@@ -83,7 +83,7 @@ export const GeneralSettings: React.FC<SettingTabChildProps> = ({
     useEffect(() => {
         loadLlmModels();
         loadEmbeddingModels();
-    }, []);
+    }, [settings.ollamaBaseUrl]);
 
     return (
         <div>

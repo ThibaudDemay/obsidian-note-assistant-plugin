@@ -27,7 +27,7 @@
 - [ ] i18n support
 
 ### Bugs
-- [ ] Bug: When ollama base url is changed, the models (LLM or embedding) are not re-fetched
+
 
 ### Chores
 - [ ] github actions for CI/CD to release on Obsidian community plugins ?
@@ -61,3 +61,4 @@
     - [X] Chat state "No Conversation" to list or create conversation
 - [X] Found way to make "State" of settings variable to sync SettingTab and Chat
 - [X] Bug: When we send a message, the loading 3 dots are not shown anymore
+- [X] Bug: When ollama base url is changed, the models (LLM or embedding) are not re-fetched
