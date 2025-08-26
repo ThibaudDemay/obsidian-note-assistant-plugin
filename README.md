@@ -1,6 +1,6 @@
 # 🧠 Note Assistant (Obsidian Plugin)
 
-> Transform your Obsidian vault into an intelligent AI assistant using local embeddings and context-aware conversations.
+> Transform your Obsidian vault by adding an AI assistant context-aware through your notes.
 
 ## ✨ Features
 
@@ -27,7 +27,7 @@
 
 ## 📖 Usage
 
-Open the command palette (`Ctrl/Cmd + P`) and run **"Note Assistant: Open Note Assistant"**
+Open the command palette (`Ctrl/Cmd + P`) and run **"Note Assistant: Open Note Assistant"** or click the brain icon in the sidebar.
 
 ### System Prompt Configuration
 
@@ -87,4 +87,3 @@ graph LR
 - [Ollama](https://ollama.ai) - Making local AI accessible
 - [Obsidian Plugin API](https://github.com/obsidianmd/obsidian-api) - Comprehensive plugin framework
 
----
