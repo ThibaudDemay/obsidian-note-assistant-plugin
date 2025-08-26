@@ -6,10 +6,10 @@
  * Created At        : 25/08/2025 18:57:00
  * ----
  * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
- * Last Modified At  : 25/08/2025 18:59:49
+ * Last Modified At  : 26/08/2025 16:23:48
  */
 
-export default {
+module.exports = {
   meta: {
     type: "problem",
     docs: {
