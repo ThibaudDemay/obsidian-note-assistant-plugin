@@ -5,7 +5,7 @@
  * Created At        : 25/08/2025 18:11:15
  * ----
  * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
- * Last Modified At  : 25/08/2025 22:39:02
+ * Last Modified At  : 26/08/2025 09:29:11
  */
 
 import { TFile } from 'obsidian';
@@ -25,7 +25,7 @@ export class StorageService {
 
     constructor(plugin: NoteAssistantPlugin) {
         this.plugin = plugin;
-        this.pluginDataDir = `${plugin.app.vault.configDir}/plugins/obsidian-note-assistant`;
+        this.pluginDataDir = `${plugin.app.vault.configDir}/note-assistant-data`;
         this.config = {
             embeddingsFile: 'embeddings-cache.json',
             conversationsDir: 'conversations',
@@ -44,6 +44,8 @@ export class StorageService {
             await this.plugin.app.vault.adapter.mkdir(path);
         }
     }
+
+
 
     /* ===== GESTION DES EMBEDDINGS ===== */
 

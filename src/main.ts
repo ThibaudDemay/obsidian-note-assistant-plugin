@@ -5,7 +5,7 @@
  * Created At        : 25/08/2025 18:11:15
  * ----
  * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
- * Last Modified At  : 25/08/2025 21:22:29
+ * Last Modified At  : 26/08/2025 09:18:15
  */
 
 import { Notice, Plugin, WorkspaceLeaf } from 'obsidian';
@@ -29,15 +29,16 @@ export default class NoteAssistantPlugin extends Plugin {
     async onload() {
         await this.loadSettings();
 
-        // Initialiser d'abord le service Ollama
+        // Initialiser le service de stockage en premier
         this.storageService = new StorageService(this);
+        await this.storageService.initialize();
+
+        // Puis le service Ollama
         this.ollamaService = new OllamaService(this.settings);
         this.ollamaScraperService = new OllamaRegistryScraperService();
 
         // Puis le service d'embeddings qui dépend d'Ollama
         this.embeddingService = new EmbeddingService(this);
-
-        await this.storageService.initialize();
 
         this.registerView(
             VIEW_TYPE_OLLAMA_CHAT,
