@@ -20,7 +20,7 @@
 		"modDateFormat": "DD/MM/YYYY HH:mm:s",
 		"include": [],
 		"includeGlob": [],
-		"exclude": ["markdown", "json", "jsonc", "shellscript"],
+		"exclude": ["markdown", "json", "jsonc", "shellscript", "yaml"],
 		"excludeGlob": ["./**/*/ignoreme.*"],
 		"autoHeader": "autoSave",
 		"enforceHeader": true,
