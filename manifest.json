@@ -3,9 +3,9 @@
 	"name": "Note Assistant",
 	"version": "1.0.0",
 	"minAppVersion": "1.9.10",
-	"description": "Note Assistant is a plugin for Obsidian that allows you to interact with AI using context with a custom prompt, integrations from notes, and question history. In short, you can interact with your notes using a customized prompt.",
+	"description": "AI assistant to interact with your vault's notes, powered by Ollama.",
 	"author": "Thibaud Demay",
-	"authorUrl": "",
-	"fundingUrl": "",
+	"authorUrl": "https://github.com/ThibaudDemay/",
+	"fundingUrl": "https://github.com/ThibaudDemay/",
 	"isDesktopOnly": false
 }
