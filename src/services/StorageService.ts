@@ -5,15 +5,15 @@
  * Created At        : 25/08/2025 18:11:15
  * ----
  * Last Modified By  : Thibaud Demay (thibaud@demay.dev)
- * Last Modified At  : 26/08/2025 09:29:11
+ * Last Modified At  : 26/08/2025 14:12:09
  */
 
 import { TFile } from 'obsidian';
 
 import { Message, StoredMessage } from '@/@types/react/views/Chat';
-import { EmbeddingDataWithHash, SimilarNote, StoredEmbeddingData } from '@/@types/services/EmbeddingService';
+import { EmbeddingDataWithHash, SimilarNote } from '@/@types/services/EmbeddingService';
 import {
-    ConversationData, StorageConfig, StoredConversationData, StoredEmbeddingsCache
+    CompressedStoredEmbeddingData, ConversationData, StorageConfig, StoredConversationData, StoredEmbeddingsCache
 } from '@/@types/services/StorageService';
 import NoteAssistantPlugin from '@/main';
 import { formatNumeric } from '@/utils';
@@ -45,7 +45,31 @@ export class StorageService {
         }
     }
 
+    /* ===== COMPRESSION BASE64 ===== */
 
+    private vectorToBase64(vector: number[]): string {
+        const float32Array = new Float32Array(vector);
+        const uint8Array = new Uint8Array(float32Array.buffer);
+
+        let binary = '';
+        for (let i = 0; i < uint8Array.length; i++) {
+            binary += String.fromCharCode(uint8Array[i]);
+        }
+
+        return btoa(binary);
+    }
+
+    private base64ToVector(base64: string): number[] {
+        const binary = atob(base64);
+        const uint8Array = new Uint8Array(binary.length);
+
+        for (let i = 0; i < binary.length; i++) {
+            uint8Array[i] = binary.charCodeAt(i);
+        }
+
+        const float32Array = new Float32Array(uint8Array.buffer);
+        return Array.from(float32Array);
+    }
 
     /* ===== GESTION DES EMBEDDINGS ===== */
 
@@ -53,14 +77,16 @@ export class StorageService {
         try {
             const embeddingsPath = `${this.pluginDataDir}/${this.config.embeddingsFile}`;
 
-            // Convertir vers le format de stockage
+            // Convertir vers le format de stockage compressé
+            const storedEmbeddings = this.convertToStoredEmbeddings(embeddings);
+
             const cacheData: StoredEmbeddingsCache = {
                 version: '1.0',
                 model: this.plugin.settings.embeddingModel,
                 modelDimensions: embeddings.size > 0 ? Array.from(embeddings.values())[0].embedding.length : 0,
                 createdAt: Date.now(),
                 updatedAt: Date.now(),
-                embeddings: this.convertToStoredEmbeddings(embeddings)
+                embeddings: storedEmbeddings
             };
 
             await this.plugin.app.vault.adapter.write(
@@ -68,7 +94,7 @@ export class StorageService {
                 JSON.stringify(cacheData, null)
             );
 
-            console.log(`💾 Saved ${embeddings.size} embeddings to cache`);
+            console.log(`💾 Saved ${embeddings.size} embeddings to cache (compressed)`);
 
         } catch (error) {
             console.error('❌ Error saving embeddings:', error);
@@ -120,12 +146,12 @@ export class StorageService {
 
     /* ===== UTILITAIRES EMBEDDINGS ===== */
 
-    private convertToStoredEmbeddings(embeddings: Map<string, EmbeddingDataWithHash>): Record<string, StoredEmbeddingData> {
-        const stored: Record<string, StoredEmbeddingData> = {};
+    private convertToStoredEmbeddings(embeddings: Map<string, EmbeddingDataWithHash>): Record<string, CompressedStoredEmbeddingData> {
+        const stored: Record<string, CompressedStoredEmbeddingData> = {};
 
         for (const [key, embeddingData] of embeddings) {
             stored[key] = {
-                embedding: embeddingData.embedding,
+                vector: this.vectorToBase64(embeddingData.embedding), // 🎯 Compression Base64
                 content: embeddingData.content,
                 lastModified: embeddingData.lastModified,
                 contentHash: embeddingData.contentHash,
@@ -146,8 +172,7 @@ export class StorageService {
         return stored;
     }
 
-    // Convertir les embeddings stockés vers le format runtime
-    private convertFromStoredEmbeddings(storedEmbeddings: Record<string, StoredEmbeddingData>): Map<string, EmbeddingDataWithHash> {
+    private convertFromStoredEmbeddings(storedEmbeddings: Record<string, CompressedStoredEmbeddingData>): Map<string, EmbeddingDataWithHash> {
         const embeddings = new Map<string, EmbeddingDataWithHash>();
 
         for (const [key, embeddingData] of Object.entries(storedEmbeddings)) {
@@ -155,7 +180,7 @@ export class StorageService {
             const realFile = this.plugin.app.vault.getAbstractFileByPath(embeddingData.file.path);
 
             const restoredEmbedding: EmbeddingDataWithHash = {
-                embedding: embeddingData.embedding,
+                embedding: this.base64ToVector(embeddingData.vector), // 🎯 Décompression Base64
                 content: embeddingData.content,
                 lastModified: embeddingData.lastModified,
                 contentHash: embeddingData.contentHash,
@@ -217,18 +242,15 @@ export class StorageService {
             }
 
             const data = await this.plugin.app.vault.adapter.read(conversationPath);
-            const storedConversation: StoredConversationData = JSON.parse(data);
+            const parsed: StoredConversationData = JSON.parse(data);
 
-            // Convertir vers le format runtime
-            const conversation: ConversationData = {
-                id: storedConversation.id,
-                title: storedConversation.title,
-                messages: this.convertFromStoredMessages(storedConversation.messages || []),
-                createdAt: storedConversation.createdAt,
-                updatedAt: storedConversation.updatedAt
+            return {
+                id: parsed.id,
+                title: parsed.title,
+                messages: this.convertFromStoredMessages(parsed.messages),
+                createdAt: parsed.createdAt,
+                updatedAt: parsed.updatedAt
             };
-
-            return conversation;
 
         } catch (error) {
             console.error('❌ Error loading conversation:', error);
@@ -239,28 +261,22 @@ export class StorageService {
     async listConversations(): Promise<ConversationData[]> {
         try {
             const conversationsDir = `${this.pluginDataDir}/${this.config.conversationsDir}`;
-            const files = await this.plugin.app.vault.adapter.list(conversationsDir);
 
+            if (!(await this.plugin.app.vault.adapter.exists(conversationsDir))) {
+                return [];
+            }
+
+            const files = await this.plugin.app.vault.adapter.list(conversationsDir);
             const conversations: ConversationData[] = [];
 
             for (const file of files.files) {
                 if (file.endsWith('.json')) {
-                    try {
-                        const data = await this.plugin.app.vault.adapter.read(file);
-                        const storedConversation: StoredConversationData = JSON.parse(data);
-
-                        // Convertir vers le format runtime
-                        const conversation: ConversationData = {
-                            id: storedConversation.id,
-                            title: storedConversation.title,
-                            messages: this.convertFromStoredMessages(storedConversation.messages || []),
-                            createdAt: storedConversation.createdAt,
-                            updatedAt: storedConversation.updatedAt
-                        };
-
-                        conversations.push(conversation);
-                    } catch (error) {
-                        console.error(`❌ Error loading conversation ${file}:`, error);
+                    const conversationId = file.replace('.json', '').split('/').pop();
+                    if (conversationId) {
+                        const conversation = await this.loadConversation(conversationId);
+                        if (conversation) {
+                            conversations.push(conversation);
+                        }
                     }
                 }
             }
@@ -303,7 +319,6 @@ export class StorageService {
 
     /* ===== UTILITAIRES CONVERSATION ===== */
 
-    // Convertir les messages runtime vers le format de stockage
     private convertToStoredMessages(messages: Message[]): StoredMessage[] {
         return messages.map(message => ({
             role: message.role,
@@ -322,7 +337,6 @@ export class StorageService {
         }));
     }
 
-    // Convertir les messages stockés vers le format runtime
     private convertFromStoredMessages(storedMessages: StoredMessage[]): Message[] {
         return storedMessages.map(message => ({
             role: message.role,

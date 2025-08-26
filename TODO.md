@@ -8,7 +8,7 @@
 - [ ] Add ability to choose message to pass in context, currently only X messages is passed based on settings.
 - [ ] Add ability to choose file to pass in context, currently similar notes are passed using embeddings.
 - [ ] Enhancement of embeddings
-  - [ ] Better format to store embeddings (currently just JSON), maybe use a binary format for vector inside json ? or fully binary format ?
+  - [X] Better format to store embeddings (currently just JSON), maybe use a binary format for vector inside json ? or fully binary format ?
   - [ ] Change hashing maybe to faster and smaller hash then sha256 implementation by AI ? (benchmark needed and compatibility with Obsidian mobile)
   - [ ] Add ability to choose to process sections or full note for embeddings, currently only sections are processed.
   - [ ] Enhance embedding generation of section to be smarter, with including at least title of note, and maybe some metadata.
